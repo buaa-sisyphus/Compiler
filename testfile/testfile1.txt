@@ -1,0 +1,58 @@
+//function
+void func1() {
+    printf("void func1()\n");
+}
+
+int func2() {
+    printf("int func2()\n");
+    return 1;
+}
+
+char func3(char a) {
+    printf("char func3(char a)\n");
+    return a;
+}
+
+int func4(int a, int b) {
+    printf("int func4(int a, int b)\n");
+    return a + b;
+}
+
+int func5(int a, int b, int c) {
+    printf("int func5(int a, int b, int c)\n");
+    return a + b + c;
+}
+
+int func6(int a[], char b[]) {
+    printf("int func6(int a[], char b[])\n");
+    return a[0]+b[0];
+}
+
+int main(){
+    printf("22371561\n");
+    printf("22371561\n");
+    const int arr_0[2]={0,1};
+    int arr_1[1];
+    int arr_2[2]={0,1};
+    char arr_3[100],arr_5[100];
+    char arr_4[100]="buaa";
+    arr_1[1]=10;
+
+    func1();
+    func2();
+    func3('a');
+    func4(1,2);
+    func5(arr_2[0],arr_2[1],arr_2[2]);
+    func6(arr_1,arr_4);
+    
+    int a=0;
+    if (a == 0 && func2()) {
+        a = 1;
+        printf("&&\n");
+    }
+    if (a == 1 || func2()) {
+        printf("||\n");
+    }
+
+    return 0;
+}

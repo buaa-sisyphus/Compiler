@@ -1,0 +1,10 @@
+22371561
+22371561
+22371561
+22371561
+void func1()
+int func2()
+char func3(char a)
+int func4(int a, int b)
+int func5(int a, int b, int c)
+int func6(int a[], char b[])
