@@ -94,17 +94,37 @@ public class Lexer {
             } else if (c == '\'') {
                 // 字符
                 String str = "" + c;
-                while ((ch = reader.read()) != -1) {
-                    c = (char) ch;
-                    if (str.length() == 1) {
+                for (int i = 0; i < 2; i++) {
+                    if ((ch = reader.read()) != -1) {
+                        c = (char) ch;
                         str += c;
-                    } else if (str.length() == 2 && c == '\'') {
-                        str += c;
-                        break;
-                    } else {
-                        //todo
-                        //System.out.println("字符有问题");
-                        break;
+                        if (i == 0 && c == '\\') {
+                            // 可能为转义字符
+                            ch = reader.read();
+                            if (ch != -1) {
+                                c = (char) ch;
+                                str += c;
+                                if (c == '\'') {
+                                    ch = reader.read();
+                                    if (ch != -1) {
+                                        c = (char) ch;
+                                        if (c == '\'') {
+                                            // 是'\''这种情况
+                                            str += c;
+                                        }else{
+                                            // 是'\'这种情况
+                                            reader.unread(c);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                        } else if (i == 1) {
+                            if(c=='\'') break; //不是转义字符
+                            else {
+                                //todo
+                            }
+                        }
                     }
                 }
                 //System.out.println("字符：" + str);
@@ -188,6 +208,7 @@ public class Lexer {
                             }
                         }
                     } else {
+                        reader.unread(c);
                         tokens.add(new Token(TokenType.DIV, lineNum, "/"));
                     }
                 } else {
