@@ -78,7 +78,14 @@ public class Lexer {
                 String str = "" + c;
                 while ((ch = reader.read()) != -1) {
                     c = (char) ch;
-                    if (c == '\"') {
+                    if (c == '\\') {
+                        str += c;
+                        //读到转义字符就强制再读一次
+                        if ((ch = reader.read()) != -1) {
+                            c = (char) ch;
+                            str += c;
+                        }
+                    } else if (c == '\"') {
                         str += c;
                         break;
                     } else if (c == '\n') {
@@ -111,7 +118,7 @@ public class Lexer {
                                         if (c == '\'') {
                                             // 是'\''这种情况
                                             str += c;
-                                        }else{
+                                        } else {
                                             // 是'\'这种情况
                                             reader.unread(c);
                                         }
@@ -120,7 +127,7 @@ public class Lexer {
                                 }
                             }
                         } else if (i == 1) {
-                            if(c=='\'') break; //不是转义字符
+                            if (c == '\'') break; //不是转义字符
                             else {
                                 //todo
                             }
