@@ -209,8 +209,10 @@ public class Lexer {
                             if (c == '\n') {
                                 lineNum++;
                             } else if (c == '*') {
-                                if ((ch = reader.read()) != -1 && (char) ch == '/') {
-                                    break;
+                                if ((ch = reader.read()) != -1) {
+                                    c=(char)ch;
+                                    if( c == '/') break;
+                                    else reader.unread(c);
                                 }
                             }
                         }
