@@ -1,10 +1,12 @@
 package frontend;
 
+import error.ErrorType;
 import node.*;
 import token.Token;
 import token.TokenType;
-
+import error.Error;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -47,11 +49,13 @@ public class Parser {
     }};
 
     private List<Token> tokens;
+    private List<Error> errors;
     private CompUnitNode compUnitNode;
     private int index = 0;
 
-    public Parser(List<Token> tokens) {
+    public Parser(List<Token> tokens,List<Error> errors) {
         this.tokens = tokens;
+        this.errors = errors;
     }
 
     private Token match(TokenType type) {
@@ -59,10 +63,17 @@ public class Parser {
             Token token = tokens.get(index);
             index++;
             return token;
-        } else {
-            //todo
+        } else if (type == TokenType.SEMICN) {
+            Token token = tokens.get(index-1);
+            errors.add(new Error(ErrorType.i,token.getLineNum()));
+        } else if (type == TokenType.LPARENT) {
+            Token token = tokens.get(index-1);
+            errors.add(new Error(ErrorType.j,token.getLineNum()));
+        } else if (type == TokenType.LBRACE){
+            Token token = tokens.get(index-1);
+            errors.add(new Error(ErrorType.k,token.getLineNum()));
         }
-        return null;
+            return null;
     }
 
     public void analyze() {
@@ -632,4 +643,8 @@ public class Parser {
         return new VarDefNode(ident, lBrackToken, rBrackToken, constExpNode, assignToken, initValNode);
     }
 
+    public List<Error> getErrors() {
+        errors.sort(Comparator.comparingInt(Error::getLineNum));
+        return errors;
+    }
 }
