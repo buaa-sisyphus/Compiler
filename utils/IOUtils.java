@@ -1,11 +1,10 @@
 package utils;
 
+import org.w3c.dom.Node;
 import token.Token;
 import error.Error;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+
+import java.io.*;
 import java.util.List;
 
 public class IOUtils {
@@ -18,7 +17,7 @@ public class IOUtils {
         out.close();
     }
 
-    public static void wirteErrors(List<Error> errors) throws FileNotFoundException, UnsupportedEncodingException {
+    public static void writeErrors(List<Error> errors) throws FileNotFoundException, UnsupportedEncodingException {
         File outputFile = new File("error.txt");
         PrintWriter out = new PrintWriter(outputFile, "UTF-8");
         for (Error error : errors) {
@@ -27,5 +26,26 @@ public class IOUtils {
         out.close();
     }
 
+    public static void write(String str) {
+        File outputFile = new File("parser.txt");
+        FileWriter fw= null;
+        try{
+            fw = new FileWriter(outputFile,true);
+            fw.write(str);
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public static void empty(String filePath){
+        File outputFile = new File(filePath);
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(outputFile, false);
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
