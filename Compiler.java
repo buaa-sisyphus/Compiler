@@ -11,15 +11,10 @@ public class Compiler {
         IOUtils.empty("error.txt");
         Lexer lexer = Lexer.getLexer();
         lexer.analyze();
+//        IOUtils.writeTokens(lexer.getTokens());
         Parser parser = new Parser(lexer.getTokens(), lexer.getErrors());
         parser.analyze();
-        if (lexer.getErrors().isEmpty()) {
-//            IOUtils.writeTokens(lexer.getTokens());
-            parser.print();
-        } else {
-            IOUtils.writeErrors(parser.getErrors());
-        }
-
-
+        parser.print();
+        IOUtils.writeErrors(parser.getErrors());
     }
 }

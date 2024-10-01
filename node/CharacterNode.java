@@ -1,5 +1,6 @@
 package node;
 
+import frontend.Parser;
 import token.Token;
 import utils.IOUtils;
 
@@ -15,5 +16,6 @@ public class CharacterNode extends Node {
     @Override
     public void print() {
         IOUtils.write(charConst.toString());
+        IOUtils.write(Parser.nodeType.get(type));
     }
 }

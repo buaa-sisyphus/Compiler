@@ -31,6 +31,7 @@ public class ConstInitValNode extends Node {
         this.lBraceToken = lBraceToken;
         this.rBraceToken = rBraceToken;
         this.commaTokens = commaTokens;
+        this.type=NodeType.ConstInitVal;
     }
 
     @Override

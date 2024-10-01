@@ -16,14 +16,22 @@ public class InitValNode extends Node {
     private List<Token> commaTokens;
     private Token rBrackToken;
 
-    public InitValNode(ExpNode expNode, List<ExpNode> expNodes, Token stringConst, Token lBrackToken, Token rBrackToken, List<Token> commaTokens) {
-        this.expNode = expNode;
+    public InitValNode(List<ExpNode> expNodes, Token lBrackToken, Token rBrackToken, List<Token> commaTokens) {
         this.expNodes = expNodes;
-        this.stringConst = stringConst;
-        this.type = NodeType.InitVal;
         this.lBrackToken = lBrackToken;
         this.rBrackToken = rBrackToken;
         this.commaTokens = commaTokens;
+        this.type = NodeType.InitVal;
+    }
+
+    public InitValNode(Token stringConst) {
+        this.stringConst = stringConst;
+        this.type = NodeType.InitVal;
+    }
+
+    public InitValNode(ExpNode expNode) {
+        this.expNode = expNode;
+        this.type = NodeType.InitVal;
     }
 
     @Override
@@ -42,7 +50,7 @@ public class InitValNode extends Node {
                 }
             }
             IOUtils.write(rBrackToken.toString());
-            IOUtils.write(Parser.nodeType.get(type));
         }
+        IOUtils.write(Parser.nodeType.get(type));
     }
 }
