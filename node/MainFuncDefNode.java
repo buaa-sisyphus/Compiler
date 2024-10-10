@@ -28,6 +28,6 @@ public class MainFuncDefNode extends Node{
         IOUtils.write(lParent.toString());
         IOUtils.write(rParent.toString());
         block.print();
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

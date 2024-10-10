@@ -25,6 +25,6 @@ public class FuncFParamsNode extends Node {
             IOUtils.write(commaTokens.get(i-1).toString());
             funcFParamNodes.get(i).print();
         }
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

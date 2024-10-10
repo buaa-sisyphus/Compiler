@@ -23,6 +23,6 @@ public class ForStmtNode extends Node{
         lValNode.print();
         IOUtils.write(assignToken.toString());
         expNode.print();
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

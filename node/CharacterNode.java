@@ -16,6 +16,6 @@ public class CharacterNode extends Node {
     @Override
     public void print() {
         IOUtils.write(charConst.toString());
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

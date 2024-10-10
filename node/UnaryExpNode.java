@@ -49,6 +49,6 @@ public class UnaryExpNode extends Node {
             unaryOpNode.print();
             unaryExpNode.print();
         }
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

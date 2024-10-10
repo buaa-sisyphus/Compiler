@@ -27,6 +27,6 @@ public class BlockNode extends Node {
             blockItemNode.print();
         }
         IOUtils.write(rBraceToken.toString());
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

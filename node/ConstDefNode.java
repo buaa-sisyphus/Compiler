@@ -34,6 +34,6 @@ public class ConstDefNode extends Node {
         }
         IOUtils.write(assignToken.toString());
         constInitValNode.print();
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

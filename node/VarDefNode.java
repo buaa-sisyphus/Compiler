@@ -38,6 +38,6 @@ public class VarDefNode extends Node {
             IOUtils.write(assignToken.toString());
             initValNode.print();
         }
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

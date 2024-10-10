@@ -5,9 +5,9 @@ import token.Token;
 import utils.IOUtils;
 
 /* AddExp → MulExp | AddExp ('+' | '−') MulExp
-* ↓
-* AddExp -> MulExp [('+' | '-') AddExp]
-*/
+ * ↓
+ * AddExp -> MulExp [('+' | '-') AddExp]
+ */
 public class AddExpNode extends Node {
     private MulExpNode mulExpNode;
     private AddExpNode addExpNode;
@@ -22,7 +22,7 @@ public class AddExpNode extends Node {
 
     public void print() {
         mulExpNode.print();
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
         if (addExpNode != null) {
             IOUtils.write(op.toString());
             addExpNode.print();

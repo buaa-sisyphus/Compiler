@@ -49,6 +49,6 @@ public class PrimaryExpNode extends Node {
         } else if (characterNode != null) {
             characterNode.print();
         }
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

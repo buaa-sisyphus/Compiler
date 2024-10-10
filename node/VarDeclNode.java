@@ -30,6 +30,6 @@ public class VarDeclNode extends Node {
             varDefNodes.get(i).print();
         }
         IOUtils.write(semicnToken.toString());
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

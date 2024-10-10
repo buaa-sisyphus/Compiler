@@ -28,6 +28,6 @@ public class FuncFParamNode extends Node {
             IOUtils.write(lBrackToken.toString());
             IOUtils.write(rBrackToken.toString());
         }
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

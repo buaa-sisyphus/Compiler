@@ -51,6 +51,6 @@ public class ConstInitValNode extends Node {
             }
             IOUtils.write(rBraceToken.toString());
         }
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

@@ -23,7 +23,7 @@ public class RelExpNode extends Node{
     @Override
     public void print() {
         addExpNode.print();
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
         if (relExpNode != null) {
             IOUtils.write(op.toString());
             relExpNode.print();

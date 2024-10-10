@@ -15,6 +15,6 @@ public class ExpNode extends Node {
     @Override
     public void print() {
         addExpNode.print();
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

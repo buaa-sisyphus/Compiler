@@ -28,6 +28,6 @@ public class LValNode extends Node {
             expNode.print();
             IOUtils.write(rBrackToken.toString());
         }
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

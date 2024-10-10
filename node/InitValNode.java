@@ -51,6 +51,6 @@ public class InitValNode extends Node {
             }
             IOUtils.write(rBrackToken.toString());
         }
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

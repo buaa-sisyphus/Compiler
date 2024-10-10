@@ -16,6 +16,6 @@ public class UnaryOpNode extends Node {
     @Override
     public void print() {
         IOUtils.write(op.toString());
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

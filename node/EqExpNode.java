@@ -23,7 +23,7 @@ public class EqExpNode extends Node {
     @Override
     public void print() {
         relExpNode.print();
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
         if (eqExpNode != null) {
             IOUtils.write(op.toString());
             eqExpNode.print();

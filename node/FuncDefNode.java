@@ -33,6 +33,6 @@ public class FuncDefNode extends Node{
         }
         IOUtils.write(rParent.toString());
         blockNode.print();
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }

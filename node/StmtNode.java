@@ -164,7 +164,7 @@ public class StmtNode extends Node {
                 IOUtils.write(assignToken.toString());
                 expNode.print();
                 IOUtils.write(semicnToken.toString());
-                IOUtils.write(Parser.nodeType.get(type));
+                IOUtils.write(typeToString());
                 break;
             case Exp:
                 // Stmt → [Exp] ';'
@@ -172,7 +172,7 @@ public class StmtNode extends Node {
                     expNode.print();
                 }
                 IOUtils.write(semicnToken.toString());
-                IOUtils.write(Parser.nodeType.get(type));
+                IOUtils.write(typeToString());
                 break;
             case If:
                 //Stmt → 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
@@ -185,7 +185,7 @@ public class StmtNode extends Node {
                     IOUtils.write(elseToken.toString());
                     stmtNodes.get(1).print();
                 }
-                IOUtils.write(Parser.nodeType.get(type));
+                IOUtils.write(typeToString());
                 break;
             case For:
                 //Stmt → 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
@@ -198,21 +198,21 @@ public class StmtNode extends Node {
                 if (forStmtNodeSec != null) forStmtNodeSec.print();
                 IOUtils.write(rParenToken.toString());
                 stmtNode.print();
-                IOUtils.write(Parser.nodeType.get(type));
+                IOUtils.write(typeToString());
                 break;
             case Break:
             case Continue:
                 // Stmt → 'break' ';' | 'continue' ';'
                 IOUtils.write(breakToken.toString());
                 IOUtils.write(semicnToken.toString());
-                IOUtils.write(Parser.nodeType.get(type));
+                IOUtils.write(typeToString());
                 break;
             case Return:
                 // Stmt → 'return' [Exp] ';'
                 IOUtils.write(returnToken.toString());
                 if (expNode != null) expNode.print();
                 IOUtils.write(semicnToken.toString());
-                IOUtils.write(Parser.nodeType.get(type));
+                IOUtils.write(typeToString());
                 break;
             case Printf:
                 // Stmt → 'printf''('StringConst {','Exp}')'';'
@@ -227,7 +227,7 @@ public class StmtNode extends Node {
                 }
                 IOUtils.write(rParenToken.toString());
                 IOUtils.write(semicnToken.toString());
-                IOUtils.write(Parser.nodeType.get(type));
+                IOUtils.write(typeToString());
                 break;
             case GetChar:
             case GetInt:
@@ -238,12 +238,12 @@ public class StmtNode extends Node {
                 IOUtils.write(lParenToken.toString());
                 IOUtils.write(rParenToken.toString());
                 IOUtils.write(semicnToken.toString());
-                IOUtils.write(Parser.nodeType.get(type));
+                IOUtils.write(typeToString());
                 break;
             case Block:
                 // Stmt → Block
                 blockNode.print();
-                IOUtils.write(Parser.nodeType.get(type));
+                IOUtils.write(typeToString());
                 break;
             default:
                 System.out.println("StmtType Error");

@@ -26,6 +26,6 @@ public class CompUnitNode extends Node{
             funcDefNode.print();
         }
         mainFuncDefNode.print();
-        IOUtils.write(Parser.nodeType.get(type));
+        IOUtils.write(typeToString());
     }
 }
