@@ -1,9 +1,15 @@
 package node;
 
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
+import symbol.*;
+import symbol.Symbol.SymbolType;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
+
+import java.util.List;
 
 // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp
 public class UnaryExpNode extends Node {
@@ -50,5 +56,42 @@ public class UnaryExpNode extends Node {
             unaryExpNode.print();
         }
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table) {
+        //todo
+        if (primaryExpNode != null) {
+
+        } else if (ident != null) {
+            if (table.findSymbol(ident.getContent())) {
+                Symbol symbol = table.getSymbol(ident.getContent());
+                if (symbol instanceof FuncSymbol) {
+                    FuncSymbol funcSymbol = (FuncSymbol) symbol;
+                    int give = funcSymbol.getParamsCount();
+                    List<FuncParam> params = funcSymbol.getParams();
+                    if(funcRParamsNode != null) {
+                        if (!funcRParamsNode.matchParamsCount(give)) {
+                            ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
+                        } else if (!funcRParamsNode.matchParams(params)) {
+
+                        }
+                    }else{
+                        if(give!=0){
+                            ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
+                        }
+                    }
+                } else {
+                    ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
+                }
+            } else {
+                ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
+            }
+        } else {
+
+        }
+    }
+
+    public void matchParam(SymbolType type) {
+
     }
 }

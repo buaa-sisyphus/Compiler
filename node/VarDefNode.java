@@ -1,6 +1,9 @@
 package node;
 
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
@@ -39,5 +42,25 @@ public class VarDefNode extends Node {
             initValNode.print();
         }
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table){
+        //todo
+        if (table.findSymbol(ident.getContent())){
+
+        }else{
+            ErrorHandler.getInstance().addError(ErrorType.c,ident.getLineNum());
+        }
+    }
+
+    public boolean isArray(){
+        if(lBrackToken!=null && rBrackToken!=null){
+            return true;
+        }
+        return false;
+    }
+
+    public Token getIdent() {
+        return ident;
     }
 }

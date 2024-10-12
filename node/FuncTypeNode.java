@@ -18,4 +18,8 @@ public class FuncTypeNode extends Node {
         IOUtils.write(token.toString());
         IOUtils.write(typeToString());
     }
+
+    public Token getToken() {
+        return token;
+    }
 }

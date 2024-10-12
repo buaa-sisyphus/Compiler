@@ -18,4 +18,8 @@ public class CharacterNode extends Node {
         IOUtils.write(charConst.toString());
         IOUtils.write(typeToString());
     }
+
+    public char getChar(){
+        return charConst.getContent().charAt(0);
+    }
 }

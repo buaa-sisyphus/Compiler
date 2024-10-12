@@ -18,4 +18,8 @@ public class UnaryOpNode extends Node {
         IOUtils.write(op.toString());
         IOUtils.write(typeToString());
     }
+
+    public Token getOp() {
+        return op;
+    }
 }

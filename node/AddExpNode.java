@@ -1,7 +1,8 @@
 package node;
 
-import frontend.Parser;
+import symbol.Symbol.SymbolType;
 import token.Token;
+import token.TokenType;
 import utils.IOUtils;
 
 /* AddExp → MulExp | AddExp ('+' | '−') MulExp
@@ -27,5 +28,9 @@ public class AddExpNode extends Node {
             IOUtils.write(op.toString());
             addExpNode.print();
         }
+    }
+
+    public void matchParam(SymbolType type) {
+        mulExpNode.matchParam(type);
     }
 }

@@ -2,6 +2,7 @@ package node;
 
 import frontend.Parser;
 import token.Token;
+import token.TokenType;
 import utils.IOUtils;
 
 import java.io.FileNotFoundException;
@@ -20,4 +21,16 @@ public class BTypeNode extends Node{
     public void print() {
         IOUtils.write(token.toString());
     }
+
+    public Token getToken() {
+        return token;
+    }
+
+    public Boolean isInt(){
+        if (token.getType()== TokenType.INTTK){
+            return true;
+        }
+        return false;
+    }
+
 }

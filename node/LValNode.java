@@ -1,6 +1,9 @@
 package node;
 
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
@@ -29,5 +32,14 @@ public class LValNode extends Node {
             IOUtils.write(rBrackToken.toString());
         }
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table){
+        //todo
+        if(table.findSymbol(ident.getContent())){
+
+        }else{
+            ErrorHandler.getInstance().addError(ErrorType.c,ident.getLineNum());
+        }
     }
 }

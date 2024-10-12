@@ -18,4 +18,8 @@ public class NumberNode extends Node {
         IOUtils.write(intConst.toString());
         IOUtils.write(typeToString());
     }
+
+    public int getNumber() {
+        return Integer.parseInt(intConst.getContent());
+    }
 }

@@ -1,4 +1,4 @@
-package Symbol;
+package symbol;
 
 public abstract class Symbol {
     protected String name;
@@ -18,6 +18,12 @@ public abstract class Symbol {
         VoidFunc,
         CharFunc,
         IntFunc,
+    }
+
+    public Symbol() {}
+
+    public String getName() {
+        return name;
     }
 
     @Override

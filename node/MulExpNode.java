@@ -1,7 +1,9 @@
 package node;
 
 import frontend.Parser;
+import symbol.Symbol.SymbolType;
 import token.Token;
+import token.TokenType;
 import utils.IOUtils;
 
 /* MulExp → UnaryExp | MulExp ('*' | '/' | '%') UnaryExp
@@ -29,4 +31,9 @@ public class MulExpNode extends Node {
             mulExpNode.print();
         }
     }
+
+    public void matchParam(SymbolType type) {
+        unaryExpNode.matchParam(type);
+    }
+
 }

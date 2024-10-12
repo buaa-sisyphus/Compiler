@@ -1,8 +1,7 @@
 package node;
 
-import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -26,5 +25,11 @@ public class FuncFParamsNode extends Node {
             funcFParamNodes.get(i).print();
         }
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table){
+        for (FuncFParamNode funcFParamNode : funcFParamNodes) {
+            funcFParamNode.fill(table);
+        }
     }
 }

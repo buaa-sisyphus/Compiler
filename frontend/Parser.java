@@ -1,5 +1,7 @@
 package frontend;
 
+import error.ErrorHandler;
+import symbol.SymbolTable;
 import error.ErrorType;
 import node.*;
 import token.Token;
@@ -8,19 +10,21 @@ import error.Error;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 
 public class Parser {
 
     private List<Token> tokens;
-    private List<Error> errors;
     private CompUnitNode compUnitNode;
     private int index = 0;
+    public static int scope = 0;
+    private SymbolTable symbolTable;
+    private SymbolTable nowSymbolTable;
 
-    public Parser(List<Token> tokens, List<Error> errors) {
+    public Parser(List<Token> tokens) {
         this.tokens = tokens;
-        this.errors = errors;
+        symbolTable = new SymbolTable();
+        nowSymbolTable = symbolTable;
     }
 
     private Token match(TokenType type) {
@@ -30,16 +34,16 @@ public class Parser {
             return token;
         } else if (type == TokenType.SEMICN) {
             Token token = tokens.get(index - 1);
-            errors.add(new Error(ErrorType.i, token.getLineNum()));
-            return new Token(TokenType.SEMICN,token.getLineNum(),";");
+            ErrorHandler.getInstance().addError(ErrorType.i, token.getLineNum());
+            return new Token(TokenType.SEMICN, token.getLineNum(), ";");
         } else if (type == TokenType.RPARENT) {
             Token token = tokens.get(index - 1);
-            errors.add(new Error(ErrorType.j, token.getLineNum()));
-            return new Token(TokenType.RPARENT,token.getLineNum(),")");
+            ErrorHandler.getInstance().addError(ErrorType.j, token.getLineNum());
+            return new Token(TokenType.RPARENT, token.getLineNum(), ")");
         } else if (type == TokenType.RBRACK) {
             Token token = tokens.get(index - 1);
-            errors.add(new Error(ErrorType.k, token.getLineNum()));
-            return new Token(TokenType.RBRACK,token.getLineNum(),"]");
+            ErrorHandler.getInstance().addError(ErrorType.k, token.getLineNum());
+            return new Token(TokenType.RBRACK, token.getLineNum(), "]");
         }
         return null;
     }
@@ -50,6 +54,10 @@ public class Parser {
 
     public void print() {
         if (compUnitNode != null) compUnitNode.print();
+    }
+
+    public void fill(){
+        if (compUnitNode != null) compUnitNode.fill(symbolTable);
     }
 
     private AddExpNode AddExp() {
@@ -308,10 +316,10 @@ public class Parser {
             }
             Token rBraceToken = match(TokenType.RBRACE);
             return new InitValNode(expNodes, lBraceToken, rBraceToken, commaTokens);
-        }else if(tokens.get(index).getType() == TokenType.STRCON){
+        } else if (tokens.get(index).getType() == TokenType.STRCON) {
             Token stringConst = match(TokenType.STRCON);
             return new InitValNode(stringConst);
-        }else{
+        } else {
             ExpNode expNode = Exp();
             return new InitValNode(expNode);
         }
@@ -621,8 +629,7 @@ public class Parser {
         return new VarDefNode(ident, lBrackToken, rBrackToken, constExpNode, assignToken, initValNode);
     }
 
-    public List<Error> getErrors() {
-        errors.sort(Comparator.comparingInt(Error::getLineNum));
-        return errors;
+    public SymbolTable getSymbolTable() {
+        return symbolTable;
     }
 }

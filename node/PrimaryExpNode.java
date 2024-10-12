@@ -51,4 +51,17 @@ public class PrimaryExpNode extends Node {
         }
         IOUtils.write(typeToString());
     }
+
+    public int getValue() {
+        if(lParent!=null && rParent!=null) {
+            return expNode.getValue();
+        }else if(lValNode!=null) {
+
+        }else if(numberNode!=null) {
+            return numberNode.getNumber();
+        }else if(characterNode!=null) {
+            return characterNode.getChar();
+        }
+        return 0;
+    }
 }

@@ -1,7 +1,6 @@
 package node;
 
-import frontend.Parser;
-import utils.IOUtils;
+import symbol.SymbolTable;
 
 // BlockItem → Decl | Stmt
 public class BlockItemNode extends Node {
@@ -20,6 +19,14 @@ public class BlockItemNode extends Node {
             declNode.print();
         }else{
             stmtNode.print();
+        }
+    }
+
+    public void fill(SymbolTable table){
+        if(declNode != null) {
+            declNode.fill(table);
+        }else{
+            stmtNode.fill(table);
         }
     }
 }

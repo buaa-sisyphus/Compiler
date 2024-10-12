@@ -1,8 +1,11 @@
 package node;
 
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
+import symbol.ArraySymbol;
+import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -31,5 +34,22 @@ public class VarDeclNode extends Node {
         }
         IOUtils.write(semicnToken.toString());
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table){
+        boolean isConst=false;
+        boolean isInt=bTypeNode.isInt();
+        for (int i = 0; i < varDefNodes.size(); i++) {
+            VarDefNode varDefNode = varDefNodes.get(i);
+            Token ident=varDefNode.getIdent();
+            if(table.findSymbol(ident.getContent())){
+                ErrorHandler.getInstance().addError(ErrorType.b,ident.getLineNum());
+            }else{
+                ArraySymbol arraySymbol = new ArraySymbol();
+                boolean isArray = varDefNode.isArray();
+                arraySymbol.set(ident, table.getScopeNum(),isInt,isArray,isConst);
+                table.addSymbol(arraySymbol.getName(),arraySymbol);
+            }
+        }
     }
 }

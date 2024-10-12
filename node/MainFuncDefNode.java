@@ -1,8 +1,8 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 // MainFuncDef → 'int' 'main' '(' ')' Block
@@ -29,5 +29,13 @@ public class MainFuncDefNode extends Node{
         IOUtils.write(rParent.toString());
         block.print();
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table){
+        SymbolTable newTable = new SymbolTable();
+        table.addChild(newTable);
+        Parser.scope++;
+        newTable.setScopeNum(Parser.scope);
+        block.fill(newTable);
     }
 }

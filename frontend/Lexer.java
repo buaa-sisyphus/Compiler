@@ -1,5 +1,6 @@
 package frontend;
 
+import error.ErrorHandler;
 import error.ErrorType;
 import token.Token;
 import token.TokenType;
@@ -30,7 +31,6 @@ public class Lexer {
     }};
     private static final Lexer instance = new Lexer();// 单例
     private List<Token> tokens = new ArrayList<>();// 识别到的所有单词
-    private List<Error> errors = new ArrayList<>();// 试别到的所有错误
 
     public void analyze() throws IOException {
         PushbackReader reader = new PushbackReader(new FileReader("testfile.txt"), 1);
@@ -158,11 +158,11 @@ public class Lexer {
                     } else {
                         reader.unread(c);
                         tokens.add(new Token(TokenType.AND, lineNum, "&"));
-                        errors.add(new Error(ErrorType.a, lineNum));
+                        ErrorHandler.getInstance().addError(ErrorType.a, lineNum);
                     }
                 } else {
                     tokens.add(new Token(TokenType.AND, lineNum, "&"));
-                    errors.add(new Error(ErrorType.a, lineNum));
+                    ErrorHandler.getInstance().addError(ErrorType.a, lineNum);
                 }
             } else if (c == '|') {
                 // ||
@@ -174,11 +174,11 @@ public class Lexer {
                         //todo
                         reader.unread(c);
                         tokens.add(new Token(TokenType.OR, lineNum, "|"));
-                        errors.add(new Error(ErrorType.a, lineNum));
+                        ErrorHandler.getInstance().addError(ErrorType.a, lineNum);
                     }
                 } else {
                     tokens.add(new Token(TokenType.OR, lineNum, "|"));
-                    errors.add(new Error(ErrorType.a, lineNum));
+                    ErrorHandler.getInstance().addError(ErrorType.a, lineNum);
                 }
             } else if (c == '+') {
                 // +
@@ -304,9 +304,4 @@ public class Lexer {
     public List<Token> getTokens() {
         return tokens;
     }
-
-    public List<Error> getErrors() {
-        return errors;
-    }
-
 }

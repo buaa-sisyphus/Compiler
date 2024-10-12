@@ -1,6 +1,10 @@
 package node;
 
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
+import symbol.ArraySymbol;
+import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
@@ -29,5 +33,21 @@ public class FuncFParamNode extends Node {
             IOUtils.write(rBrackToken.toString());
         }
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table) {
+        if(table.findSymbol(ident.getContent())){
+            ErrorHandler.getInstance().addError(ErrorType.b,ident.getLineNum());
+        }else{
+            boolean isConst=false;
+            boolean isInt= bTypeNode.isInt();
+            boolean isArray=false;
+            if (rBrackToken != null && lBrackToken != null) {
+                isArray=true;
+            }
+            ArraySymbol arraySymbol = new ArraySymbol();
+            arraySymbol.set(ident,table.getScopeNum(),isInt,isArray,isConst);
+            table.addSymbol(arraySymbol.getName(),arraySymbol);
+        }
     }
 }

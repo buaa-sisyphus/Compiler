@@ -1,10 +1,9 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
-
 import java.util.List;
 
 /**
@@ -244,6 +243,59 @@ public class StmtNode extends Node {
                 // Stmt → Block
                 blockNode.print();
                 IOUtils.write(typeToString());
+                break;
+            default:
+                System.out.println("StmtType Error");
+                break;
+        }
+    }
+
+    public void fill(SymbolTable table){
+        switch (stmtType) {
+            case LVal:
+                // Stmt → LVal '=' Exp ';'
+
+                break;
+            case Exp:
+                // Stmt → [Exp] ';'
+
+                break;
+            case If:
+                //Stmt → 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
+                stmtNodes.get(0).fill(table);
+                if (elseToken != null) {
+                    stmtNodes.get(1).fill(table);
+                }
+                break;
+            case For:
+                //Stmt → 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
+                stmtNode.fill(table);
+                break;
+            case Break:
+            case Continue:
+                // Stmt → 'break' ';' | 'continue' ';'
+
+                break;
+            case Return:
+                // Stmt → 'return' [Exp] ';'
+
+                break;
+            case Printf:
+                // Stmt → 'printf''('StringConst {','Exp}')'';'
+
+                break;
+            case GetChar:
+            case GetInt:
+                // Stmt → LVal '=' 'getint''('')'';' | LVal '=' 'getchar''('')'';'
+
+                break;
+            case Block:
+                // Stmt → Block
+                SymbolTable newTable=new SymbolTable();
+                table.addChild(newTable);
+                Parser.scope++;
+                newTable.setScopeNum(Parser.scope);
+                blockNode.fill(newTable);
                 break;
             default:
                 System.out.println("StmtType Error");
