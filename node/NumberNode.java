@@ -1,7 +1,5 @@
 package node;
 
-import frontend.Parser;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -24,7 +22,4 @@ public class NumberNode extends Node {
         return Integer.parseInt(intConst.getContent());
     }
 
-    public void fill(SymbolTable table) {
-
-    }
 }

@@ -1,18 +1,36 @@
 package symbol;
 
-import symbol.Symbol.SymbolType;
 import token.Token;
 
 public class FuncParam {
     private String funcName;
-    private SymbolType type;
+    private int btype;//0 int 1 char
+    private int type;//0 var 1 array
 
-    public FuncParam(String funcName, SymbolType type) {
+    public FuncParam(String funcName, int btype, int type) {
         this.funcName = funcName;
+        this.btype = btype;
         this.type = type;
     }
 
-    public SymbolType getType() {
+    public int getType() {
         return type;
+    }
+
+    public int getBtype() {
+        return btype;
+    }
+
+    public String getFuncName() {
+        return funcName;
+    }
+
+    @Override
+    public String toString() {
+        String str = "";
+        if (btype == 0) str += "Int";
+        else str += "Char";
+        if (type == 1) str += "Array";
+        return str+"\n";
     }
 }

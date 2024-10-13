@@ -12,17 +12,13 @@ public class FuncSymbol extends Symbol {
     public FuncSymbol() {
     }
 
-    public void set(Token token, int scopeNum, TokenType type) {
+    public void set(Token token, int scopeNum, int type, int btype, int con) {
         this.name = token.getContent();
         this.lineNum = token.getLineNum();
         this.scopeNum = scopeNum;
-        if (type == TokenType.VOIDTK) {
-            this.symbolType = SymbolType.VoidFunc;
-        } else if (type == TokenType.INTTK) {
-            this.symbolType = SymbolType.IntFunc;
-        } else {
-            this.symbolType = SymbolType.CharFunc;
-        }
+        this.type = type;
+        this.btype = btype;
+        this.con = con;
     }
 
     public int getParamsCount() {
@@ -35,9 +31,5 @@ public class FuncSymbol extends Symbol {
 
     public void addParam(FuncParam param) {
         params.add(param);
-    }
-
-    public SymbolType getSymbolType() {
-        return symbolType;
     }
 }

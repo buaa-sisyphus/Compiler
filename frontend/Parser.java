@@ -13,18 +13,12 @@ import java.util.Comparator;
 import java.util.List;
 
 public class Parser {
-
     private List<Token> tokens;
     private CompUnitNode compUnitNode;
     private int index = 0;
-    public static int scope = 0;
-    private SymbolTable symbolTable;
-    private SymbolTable nowSymbolTable;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
-        symbolTable = new SymbolTable();
-        nowSymbolTable = symbolTable;
     }
 
     private Token match(TokenType type) {
@@ -48,16 +42,16 @@ public class Parser {
         return null;
     }
 
+    public CompUnitNode getCompUnitNode() {
+        return compUnitNode;
+    }
+
     public void analyze() {
         compUnitNode = CompUnit();
     }
 
     public void print() {
         if (compUnitNode != null) compUnitNode.print();
-    }
-
-    public void fill() {
-        if (compUnitNode != null) compUnitNode.fill(symbolTable);
     }
 
     private AddExpNode AddExp() {
@@ -627,10 +621,6 @@ public class Parser {
             initValNode = InitVal();
         }
         return new VarDefNode(ident, lBrackToken, rBrackToken, constExpNode, assignToken, initValNode);
-    }
-
-    public SymbolTable getSymbolTable() {
-        return symbolTable;
     }
 
     private boolean isExp() {

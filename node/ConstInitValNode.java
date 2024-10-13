@@ -1,9 +1,6 @@
 package node;
 
-import frontend.Parser;
-import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -55,18 +52,15 @@ public class ConstInitValNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table) {
-        if (stringConst != null) {
-            //todo
-        } else if (constExp != null) {
-            constExp.fill(table);
-        } else {
-            if (!constExpNodes.isEmpty()) {
-                constExpNodes.get(0).fill(table);
-                for (int i = 1; i < constExpNodes.size(); i++) {
-                    constExpNodes.get(i).fill(table);
-                }
-            }
-        }
+    public ConstExpNode getConstExp() {
+        return constExp;
+    }
+
+    public List<ConstExpNode> getConstExpNodes() {
+        return constExpNodes;
+    }
+
+    public Token getStringConst() {
+        return stringConst;
     }
 }

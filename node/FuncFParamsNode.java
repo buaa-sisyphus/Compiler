@@ -1,7 +1,5 @@
 package node;
 
-import symbol.FuncSymbol;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -28,9 +26,7 @@ public class FuncFParamsNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table, FuncSymbol funcSymbol){
-        for (FuncFParamNode funcFParamNode : funcFParamNodes) {
-            funcFParamNode.fill(table,funcSymbol);
-        }
+    public List<FuncFParamNode> getFuncFParamNodes() {
+        return funcFParamNodes;
     }
 }

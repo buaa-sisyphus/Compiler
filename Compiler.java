@@ -1,4 +1,5 @@
 import error.ErrorHandler;
+import frontend.Builder;
 import frontend.Lexer;
 import frontend.Parser;
 import utils.IOUtils;
@@ -11,15 +12,16 @@ public class Compiler {
         IOUtils.empty("lexer.txt");
         IOUtils.empty("error.txt");
         IOUtils.empty("symbol.txt");
+        ErrorHandler handler = ErrorHandler.getInstance();
         Lexer lexer = Lexer.getLexer();
-        ErrorHandler handler=ErrorHandler.getInstance();
-//        IOUtils.writeTokens(lexer.getTokens());
         lexer.analyze();
         Parser parser = new Parser(lexer.getTokens());
         parser.analyze();
-//        parser.print();
-        parser.fill();
-        if(handler.getErrors().isEmpty()) IOUtils.write(parser.getSymbolTable());
-//        else IOUtils.writeErrors(handler.getErrors());
+        Builder builder = Builder.getInstance();
+        builder.build(parser.getCompUnitNode());
+        if(handler.getErrors().isEmpty()) IOUtils.write(builder.getRootTable());
+        else IOUtils.writeErrors(handler.getErrors());
+//        IOUtils.write(builder.getRootTable());
+//        IOUtils.writeErrors(handler.getErrors());
     }
 }

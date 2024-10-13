@@ -1,12 +1,8 @@
 package node;
 
-import frontend.Parser;
 import symbol.FuncParam;
-import symbol.Symbol;
-import symbol.Symbol.SymbolType;
 import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -38,42 +34,29 @@ public class FuncRParamsNode extends Node {
 
     public boolean matchParams(List<FuncParam> params, SymbolTable table) {
         for (int i = 0; i < params.size(); i++) {
-            String paramType = params.get(i).getType().toString();
+            String paramType = params.get(i).toString();
             ExpNode expNode = expNodes.get(i);
             String tmp = expNode.getType();
-            if (tmp.equals("var")) {
+            if (tmp.equals("0")) {
+                //立即数
                 if (paramType.contains("Array")) {
                     return false;
                 }
             } else {
-                String symbolType = table.getSymbolDeep(tmp).getSymbolType().toString();
-                if(symbolType.contains("Func")){
-                    if(symbolType.contains("Void")){
+                String symbolType = table.getSymbolDeep(tmp).toType();
+                if (symbolType.contains("Array") && paramType.contains("Array")) {
+                    if ((symbolType.contains("Int") && paramType.contains("Char")) || (symbolType.contains("Char") && paramType.contains("Int"))) {
                         return false;
-                    }else{
-                        if(paramType.contains("Array")){
-                            return false;
-                        }
                     }
-                }else{
-                    if (symbolType.contains("Array")) {
-                        if (!paramType.contains("Array")) {
-                            return false;
-                        }
-                        if (symbolType.contains("Char") && paramType.contains("Int")) {
-                            return false;
-                        }
-                        if (symbolType.contains("Int") && paramType.contains("Char")) {
-                            return false;
-                        }
-                    } else {
-                        if (paramType.contains("Array")) {
-                            return false;
-                        }
-                    }
+                } else if ((symbolType.contains("Array") && !paramType.contains("Array")) || (!symbolType.contains("Array") && paramType.contains("Array"))) {
+                    return false;
                 }
             }
         }
         return true;
+    }
+
+    public List<ExpNode> getExpNodes() {
+        return expNodes;
     }
 }

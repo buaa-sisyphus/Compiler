@@ -1,9 +1,6 @@
 package node;
 
-import frontend.Parser;
-import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 import java.util.List;
@@ -53,5 +50,17 @@ public class InitValNode extends Node {
             IOUtils.write(rBrackToken.toString());
         }
         IOUtils.write(typeToString());
+    }
+
+    public ExpNode getExpNode() {
+        return expNode;
+    }
+
+    public Token getStringConst() {
+        return stringConst;
+    }
+
+    public List<ExpNode> getExpNodes() {
+        return expNodes;
     }
 }

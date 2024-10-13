@@ -1,7 +1,5 @@
 package symbol;
 
-import token.Token;
-
 import java.util.*;
 
 public class SymbolTable {
@@ -9,6 +7,8 @@ public class SymbolTable {
     private List<SymbolTable> childrenTables = new ArrayList<>();
     private SymbolTable parentTable;
     private int scopeNum;
+    private boolean needReturn = false;
+    private boolean isFunc = false;
 
     public SymbolTable() {
     }
@@ -23,6 +23,14 @@ public class SymbolTable {
 
     public void addChild(SymbolTable child) {
         childrenTables.add(child);
+    }
+
+    public void setFunc(boolean func) {
+        isFunc = func;
+    }
+
+    public boolean isFunc() {
+        return isFunc;
     }
 
     public boolean findSymbol(String ident) {
@@ -62,5 +70,13 @@ public class SymbolTable {
 
     public void setScopeNum(int scopeNum) {
         this.scopeNum = scopeNum;
+    }
+
+    public void setNeedReturn(boolean needReturn) {
+        this.needReturn = needReturn;
+    }
+
+    public boolean getNeedReturn() {
+        return needReturn;
     }
 }

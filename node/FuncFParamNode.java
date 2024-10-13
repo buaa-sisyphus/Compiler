@@ -1,12 +1,5 @@
 package node;
 
-import error.ErrorHandler;
-import error.ErrorType;
-import frontend.Parser;
-import symbol.ArraySymbol;
-import symbol.FuncParam;
-import symbol.FuncSymbol;
-import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
@@ -37,22 +30,18 @@ public class FuncFParamNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table, FuncSymbol funcSymbol) {
-        if (table.getSymbol(ident.getContent()) != null) {
-            ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
-        } else {
-            boolean isConst = false;
-            boolean isInt = bTypeNode.isInt();
-            boolean isArray = false;
-            if (rBrackToken != null && lBrackToken != null) {
-                isArray = true;
-            }
-            ArraySymbol arraySymbol = new ArraySymbol();
-            arraySymbol.set(ident, table.getScopeNum(), isInt, isArray, isConst);
-            table.addSymbol(arraySymbol.getName(), arraySymbol);
+    public BTypeNode getbTypeNode() {
+        return bTypeNode;
+    }
 
-            FuncParam funcParam = new FuncParam(arraySymbol.getName(), arraySymbol.getSymbolType());
-            funcSymbol.addParam(funcParam);
+    public Token getIdent() {
+        return ident;
+    }
+
+    public int isArray() {
+        if (lBrackToken != null) {
+            return 1;
         }
+        return 0;
     }
 }

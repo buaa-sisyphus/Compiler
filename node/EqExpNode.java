@@ -1,7 +1,5 @@
 package node;
 
-import frontend.Parser;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -31,10 +29,11 @@ public class EqExpNode extends Node {
         }
     }
 
-    public void fill(SymbolTable table) {
-        relExpNode.fill(table);
-        if(eqExpNode != null) {
-            eqExpNode.fill(table);
-        }
+    public EqExpNode getEqExpNode() {
+        return eqExpNode;
+    }
+
+    public RelExpNode getRelExpNode() {
+        return relExpNode;
     }
 }

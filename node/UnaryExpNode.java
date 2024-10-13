@@ -1,15 +1,7 @@
 package node;
 
-import error.ErrorHandler;
-import error.ErrorType;
-import frontend.Parser;
-import symbol.*;
-import symbol.Symbol.SymbolType;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
-
-import java.util.List;
 
 // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp
 public class UnaryExpNode extends Node {
@@ -58,42 +50,32 @@ public class UnaryExpNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table) {
+    public String getType() {
         if (primaryExpNode != null) {
-            primaryExpNode.fill(table);
-        } else if (ident != null) {
-            Symbol symbol = table.getSymbolDeep(ident.getContent());
-            if (symbol != null && symbol instanceof FuncSymbol) {
-                FuncSymbol funcSymbol = (FuncSymbol) symbol;
-                int give = funcSymbol.getParamsCount();
-                List<FuncParam> params = funcSymbol.getParams();
-                if (funcRParamsNode != null) {
-                    if (!funcRParamsNode.matchParamsCount(give)) {
-                        ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
-                    } else if (!funcRParamsNode.matchParams(params, table)) {
-                        ErrorHandler.getInstance().addError(ErrorType.e, ident.getLineNum());
-                    }
-                } else {
-                    if (give != 0) {
-                        ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
-                    }
-                }
-            } else {
-                ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
-            }
+            return primaryExpNode.getType();
         } else {
-            //todo unaryOp
-            unaryExpNode.fill(table);
+            return "0";
         }
     }
 
-    public String getType() {
-        if (unaryOpNode != null) {
-            return "var";
-        } else if (primaryExpNode != null) {
-            return primaryExpNode.getType();
-        } else {
-            return ident.getContent();
-        }
+    public UnaryExpNode getUnaryExpNode() {
+        return unaryExpNode;
     }
+
+    public Token getIdent() {
+        return ident;
+    }
+
+    public FuncRParamsNode getFuncRParamsNode() {
+        return funcRParamsNode;
+    }
+
+    public PrimaryExpNode getPrimaryExpNode() {
+        return primaryExpNode;
+    }
+
+    public UnaryOpNode getUnaryOpNode() {
+        return unaryOpNode;
+    }
+
 }

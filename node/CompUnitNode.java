@@ -1,7 +1,5 @@
 package node;
 
-import frontend.Parser;
-import symbol.SymbolTable;
 import utils.IOUtils;
 
 import java.util.List;
@@ -30,15 +28,15 @@ public class CompUnitNode extends Node{
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table){
-        Parser.scope++;
-        table.setScopeNum(Parser.scope);
-        for(DeclNode declNode : declNodes){
-            declNode.fill(table);
-        }
-        for(FuncDefNode funcDefNode : funcDefNodes){
-            funcDefNode.fill(table);
-        }
-        mainFuncDefNode.fill(table);
+    public List<DeclNode> getDeclNodes() {
+        return declNodes;
+    }
+
+    public List<FuncDefNode> getFuncDefNodes() {
+        return funcDefNodes;
+    }
+
+    public MainFuncDefNode getMainFuncDefNode() {
+        return mainFuncDefNode;
     }
 }

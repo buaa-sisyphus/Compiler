@@ -1,12 +1,6 @@
 package node;
 
-import error.ErrorHandler;
-import error.ErrorType;
-import frontend.Parser;
-import symbol.Symbol;
-import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 // LVal → Ident ['[' Exp ']']
@@ -35,19 +29,16 @@ public class LValNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table,boolean isAssign) {
-        Symbol symbol = table.getSymbolDeep(ident.getContent());
-        if (symbol != null) {
-            if(symbol.getSymbolType().toString().contains("Const") && isAssign){
-                ErrorHandler.getInstance().addError(ErrorType.h,ident.getLineNum());
-            }
-        } else {
-            ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
-        }
+    public String getType() {
+        if (lBrackToken != null) return "0";
+        else return ident.getContent();
     }
 
-    public String getType() {
-        if (lBrackToken != null) return "var";
-        else return ident.getContent();
+    public ExpNode getExpNode() {
+        return expNode;
+    }
+
+    public Token getIdent() {
+        return ident;
     }
 }

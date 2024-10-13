@@ -1,11 +1,5 @@
 package node;
 
-
-import error.ErrorHandler;
-import error.ErrorType;
-import frontend.Parser;
-import symbol.ArraySymbol;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -40,11 +34,11 @@ public class ConstDeclNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table) {
-        boolean isInt = bTypeNode.isInt();
-        for (int i = 0; i < constDefNodes.size(); i++) {
-            ConstDefNode constDefNode = constDefNodes.get(i);
-            constDefNode.fill(table, isInt);
-        }
+    public List<ConstDefNode> getConstDefNodes() {
+        return constDefNodes;
+    }
+
+    public BTypeNode getbTypeNode() {
+        return bTypeNode;
     }
 }

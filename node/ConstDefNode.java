@@ -1,13 +1,6 @@
 package node;
 
-import error.ErrorHandler;
-import error.ErrorType;
-import frontend.Parser;
-import symbol.ArraySymbol;
-import symbol.Symbol;
-import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 // ConstDef → Ident [ '[' ConstExp ']' ] '=' ConstInitVal
@@ -42,20 +35,15 @@ public class ConstDefNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table, boolean isInt) {
-        Symbol symbol = table.getSymbol(ident.getContent());
-        if (symbol != null) {
-            ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
-        } else {
-            ArraySymbol arraySymbol = new ArraySymbol();
-            boolean isArray = (lBrackToken != null);
-            arraySymbol.set(ident, table.getScopeNum(), isInt, isArray, true);
-            table.addSymbol(arraySymbol.getName(), arraySymbol);
-        }
-        constInitValNode.fill(table);
-    }
-
     public Token getIdent() {
         return ident;
+    }
+
+    public ConstExpNode getConstExpNode() {
+        return constExpNode;
+    }
+
+    public ConstInitValNode getConstInitValNode() {
+        return constInitValNode;
     }
 }

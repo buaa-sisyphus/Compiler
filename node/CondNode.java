@@ -1,7 +1,5 @@
 package node;
 
-import frontend.Parser;
-import symbol.SymbolTable;
 import utils.IOUtils;
 
 // Cond → LOrExp
@@ -19,7 +17,7 @@ public class CondNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table) {
-        lOrExpNode.fill(table);
+    public LOrExpNode getlOrExpNode() {
+        return lOrExpNode;
     }
 }

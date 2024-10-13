@@ -31,9 +31,9 @@ public class IOUtils {
 
     public static void write(String str) {
         File outputFile = new File("parser.txt");
-        FileWriter fw= null;
-        try{
-            fw = new FileWriter(outputFile,true);
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(outputFile, true);
             fw.write(str);
             fw.close();
         } catch (IOException e) {
@@ -41,7 +41,7 @@ public class IOUtils {
         }
     }
 
-    public static void empty(String filePath){
+    public static void empty(String filePath) {
         File outputFile = new File(filePath);
         FileWriter fw = null;
         try {
@@ -52,17 +52,17 @@ public class IOUtils {
         }
     }
 
-    public static void write(SymbolTable symbolTable){
+    public static void write(SymbolTable symbolTable) {
         File outputFile = new File("symbol.txt");
-        FileWriter fw= null;
+        FileWriter fw = null;
         try {
-            fw=new FileWriter(outputFile,true);
+            fw = new FileWriter(outputFile, true);
             for (Map.Entry<String, Symbol> entry : symbolTable.entrySet()) {
                 Symbol value = entry.getValue();
                 fw.write(value.toString());
             }
             fw.flush();
-            for (SymbolTable childTable : symbolTable.getChildrenTables()){
+            for (SymbolTable childTable : symbolTable.getChildrenTables()) {
                 write(childTable);
             }
         } catch (IOException e) {

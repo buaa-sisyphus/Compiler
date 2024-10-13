@@ -1,9 +1,16 @@
-int add(int a, int b) {
-    return a + b;
-}
+void my_print(int param) {
+    if (1 == 0) {
+        int a = 1;
+        if (2 == 1) {
+            return 1;
+        }
+        return (1+ 10 ) *10;
+    }
+    else
+        return 20;
 
+    return (param + 12) * 10;
+}
 int main() {
-    int a[3] ={1,2,3};
-    int result = add(5, a);  // 错误: 参数类型不匹配，第二个参数应为 int
     return 0;
 }

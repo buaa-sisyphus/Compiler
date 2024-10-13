@@ -1,11 +1,6 @@
 package node;
 
-import error.ErrorHandler;
-import error.ErrorType;
-import frontend.Parser;
-import symbol.SymbolTable;
 import token.Token;
-import utils.CalUtils;
 import utils.IOUtils;
 
 import java.util.List;
@@ -255,82 +250,63 @@ public class StmtNode extends Node {
         }
     }
 
-    public void fill(SymbolTable table) {
-        switch (stmtType) {
-            case LVal:
-                // Stmt → LVal '=' Exp ';'
-                lValNode.fill(table,true);
-                break;
-            case Exp:
-                // Stmt → [Exp] ';'
-                if (expNode != null) {
-                    expNode.fill(table);
-                }
-                break;
-            case If:
-                //Stmt → 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
-                stmtNodes.get(0).fill(table);
-                if (elseToken != null) {
-                    stmtNodes.get(1).fill(table);
-                }
-                break;
-            case For:
-                //Stmt → 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
-                loop++;
-                stmtNode.fill(table);
-                loop--;
-                break;
-            case Break:
-            case Continue:
-                // Stmt → 'break' ';' | 'continue' ';'
-                if (loop == 0) {
-                    ErrorHandler.getInstance().addError(ErrorType.m, breakToken.getLineNum());
-                }
-                break;
-            case Return:
-                // Stmt → 'return' [Exp] ';'
-
-                break;
-            case Printf:
-                // Stmt → 'printf''('StringConst {','Exp}')'';'
-                int cnt = CalUtils.calFormatSpecifiers(stringToken.getContent());
-                int size = expNodes.size();
-                if (cnt != size) ErrorHandler.getInstance().addError(ErrorType.i, printfToken.getLineNum());
-                break;
-            case GetChar:
-            case GetInt:
-                // Stmt → LVal '=' 'getint''('')'';' | LVal '=' 'getchar''('')'';'
-                lValNode.fill(table,true);
-                break;
-            case Block:
-                // Stmt → Block
-                SymbolTable newTable = new SymbolTable();
-                table.addChild(newTable);
-                Parser.scope++;
-                newTable.setScopeNum(Parser.scope);
-                newTable.setParentTable(table);
-                blockNode.fill(newTable);
-                break;
-            default:
-                System.out.println("StmtType Error");
-                break;
-        }
-    }
-
-    public void handleReturn(SymbolTable table) {
-        switch (stmtType) {
-            case Return:
-                if (expNode != null) {
-                    ErrorHandler.getInstance().addError(ErrorType.f, returnToken.getLineNum());
-                }
-                break;
-            default:
-                fill(table);
-                break;
-        }
-    }
-
     public StmtType getStmtType() {
         return stmtType;
+    }
+
+    public StmtNode getStmtNode() {
+        return stmtNode;
+    }
+
+    public List<ExpNode> getExpNodes() {
+        return expNodes;
+    }
+
+    public ExpNode getExpNode() {
+        return expNode;
+    }
+
+    public BlockNode getBlockNode() {
+        return blockNode;
+    }
+
+    public LValNode getlValNode() {
+        return lValNode;
+    }
+
+    public CondNode getCondNode() {
+        return condNode;
+    }
+
+    public ForStmtNode getForStmtNodeFir() {
+        return forStmtNodeFir;
+    }
+
+    public ForStmtNode getForStmtNodeSec() {
+        return forStmtNodeSec;
+    }
+
+    public List<StmtNode> getStmtNodes() {
+        return stmtNodes;
+    }
+
+    public Token getStringToken() {
+        return stringToken;
+    }
+
+    public Token getElseToken() {
+        return elseToken;
+    }
+
+    public Token getBreakToken() {
+        return breakToken;
+    }
+
+    public Token getPrintfToken() {
+        return printfToken;
+    }
+
+    public Token getReturnToken() {
+        return returnToken;
     }
 }

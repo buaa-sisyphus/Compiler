@@ -1,5 +1,0 @@
-1 add IntFunc
-2 a Int
-2 b Int
-3 a IntArray
-3 result Int

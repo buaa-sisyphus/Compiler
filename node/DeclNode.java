@@ -1,7 +1,5 @@
 package node;
 
-import symbol.SymbolTable;
-
 // Decl → ConstDecl | VarDecl
 public class DeclNode extends Node {
     private ConstDeclNode constDeclNode;
@@ -21,11 +19,11 @@ public class DeclNode extends Node {
         }
     }
 
-    public void fill(SymbolTable table){
-        if(constDeclNode != null){
-            constDeclNode.fill(table);
-        }else{
-            varDeclNode.fill(table);
-        }
+    public ConstDeclNode getConstDeclNode() {
+        return constDeclNode;
+    }
+
+    public VarDeclNode getVarDeclNode() {
+        return varDeclNode;
     }
 }

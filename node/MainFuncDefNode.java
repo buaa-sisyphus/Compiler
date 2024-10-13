@@ -1,7 +1,5 @@
 package node;
 
-import frontend.Parser;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -31,12 +29,7 @@ public class MainFuncDefNode extends Node{
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table){
-        SymbolTable newTable = new SymbolTable();
-        table.addChild(newTable);
-        Parser.scope++;
-        newTable.setScopeNum(Parser.scope);
-        newTable.setParentTable(table);
-        block.fill(newTable,true);
+    public BlockNode getBlock() {
+        return block;
     }
 }

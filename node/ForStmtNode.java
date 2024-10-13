@@ -1,9 +1,6 @@
 package node;
 
-import frontend.Parser;
-import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 // ForStmt → LVal '=' Exp
@@ -27,7 +24,11 @@ public class ForStmtNode extends Node{
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table){
+    public ExpNode getExpNode() {
+        return expNode;
+    }
 
+    public LValNode getlValNode() {
+        return lValNode;
     }
 }

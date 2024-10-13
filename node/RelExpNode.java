@@ -1,6 +1,5 @@
 package node;
 
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -30,10 +29,11 @@ public class RelExpNode extends Node{
         }
     }
 
-    public void fill(SymbolTable table) {
-        addExpNode.fill(table);
-        if (relExpNode != null) {
-            relExpNode.fill(table);
-        }
+    public RelExpNode getRelExpNode() {
+        return relExpNode;
+    }
+
+    public AddExpNode getAddExpNode() {
+        return addExpNode;
     }
 }

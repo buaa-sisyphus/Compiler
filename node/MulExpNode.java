@@ -1,10 +1,6 @@
 package node;
 
-import frontend.Parser;
-import symbol.Symbol.SymbolType;
-import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 /* MulExp → UnaryExp | MulExp ('*' | '/' | '%') UnaryExp
@@ -34,17 +30,18 @@ public class MulExpNode extends Node {
     }
 
     public String getType() {
-        if(op!=null){
-            return "var";
-        }else{
+        if (op != null) {
+            return "0";
+        } else {
             return unaryExpNode.getType();
         }
     }
 
-    public void fill(SymbolTable table) {
-        unaryExpNode.fill(table);
-        if (mulExpNode != null) {
-            mulExpNode.fill(table);
-        }
+    public MulExpNode getMulExpNode() {
+        return mulExpNode;
+    }
+
+    public UnaryExpNode getUnaryExpNode() {
+        return unaryExpNode;
     }
 }

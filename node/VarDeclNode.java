@@ -1,10 +1,5 @@
 package node;
 
-import error.ErrorHandler;
-import error.ErrorType;
-import frontend.Parser;
-import symbol.ArraySymbol;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -36,11 +31,15 @@ public class VarDeclNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table) {
-        boolean isInt = bTypeNode.isInt();
-        for (int i = 0; i < varDefNodes.size(); i++) {
-            VarDefNode varDefNode = varDefNodes.get(i);
-            varDefNode.fill(table,isInt);
-        }
+    public BTypeNode getbTypeNode() {
+        return bTypeNode;
+    }
+
+    public List<Token> getCommaTokens() {
+        return commaTokens;
+    }
+
+    public List<VarDefNode> getVarDefNodes() {
+        return varDefNodes;
     }
 }

@@ -1,8 +1,5 @@
 package node;
 
-import symbol.FuncParam;
-import symbol.Symbol.SymbolType;
-import symbol.SymbolTable;
 import utils.IOUtils;
 
 // Exp → AddExp
@@ -24,7 +21,7 @@ public class ExpNode extends Node {
         return addExpNode.getType();
     }
 
-    public void fill(SymbolTable table) {
-        addExpNode.fill(table);
+    public AddExpNode getAddExpNode() {
+        return addExpNode;
     }
 }

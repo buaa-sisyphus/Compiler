@@ -1,9 +1,5 @@
 package node;
 
-import error.ErrorHandler;
-import error.ErrorType;
-import symbol.SymbolTable;
-
 // BlockItem → Decl | Stmt
 public class BlockItemNode extends Node {
     private DeclNode declNode;
@@ -24,23 +20,11 @@ public class BlockItemNode extends Node {
         }
     }
 
-    public void fill(SymbolTable table) {
-        if (declNode != null) {
-            declNode.fill(table);
-        } else {
-            stmtNode.fill(table);
-        }
+    public DeclNode getDeclNode() {
+        return declNode;
     }
 
-    public void fill(SymbolTable table, int endLine, boolean needReturn) {
-        if (needReturn && (stmtNode == null || stmtNode.getStmtType() != StmtNode.StmtType.Return)) {
-            ErrorHandler.getInstance().addError(ErrorType.g, endLine);
-        }
-        if (!needReturn && stmtNode != null) {
-            stmtNode.handleReturn(table);
-            return;
-        }
-        fill(table);
+    public StmtNode getStmtNode() {
+        return stmtNode;
     }
-
 }

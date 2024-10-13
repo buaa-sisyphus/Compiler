@@ -1,10 +1,6 @@
 package node;
 
-import frontend.Parser;
-import symbol.Symbol.SymbolType;
-import symbol.SymbolTable;
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 // PrimaryExp → '(' Exp ')' | LVal | Number | Character
@@ -56,21 +52,25 @@ public class PrimaryExpNode extends Node {
 
     public String getType() {
         if (lParent != null || numberNode != null || characterNode != null) {
-            return "var";
+            return "0";
         }else {
             return lValNode.getType();
         }
     }
 
-    public void fill(SymbolTable table){
-        if(expNode != null){
-            expNode.fill(table);
-        }else if(lValNode != null){
-            lValNode.fill(table,false);
-        }else if(numberNode != null){
-            numberNode.fill(table);
-        }else if(characterNode != null){
-            characterNode.fill(table);
-        }
+    public NumberNode getNumberNode() {
+        return numberNode;
+    }
+
+    public LValNode getlValNode() {
+        return lValNode;
+    }
+
+    public CharacterNode getCharacterNode() {
+        return characterNode;
+    }
+
+    public ExpNode getExpNode() {
+        return expNode;
     }
 }

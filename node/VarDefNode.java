@@ -1,10 +1,5 @@
 package node;
 
-import error.ErrorHandler;
-import error.ErrorType;
-import symbol.ArraySymbol;
-import symbol.Symbol;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -42,19 +37,15 @@ public class VarDefNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table, boolean isInt) {
-        Symbol symbol = table.getSymbol(ident.getContent());
-        if (symbol == null) {
-            ArraySymbol arraySymbol = new ArraySymbol();
-            boolean isArray = false;
-            if (lBrackToken != null) {
-                isArray = true;
-            }
-            arraySymbol.set(ident, table.getScopeNum(), isInt, isArray, false);
-            table.addSymbol(arraySymbol.getName(), arraySymbol);
-        } else {
-            ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
-        }
+    public Token getIdent() {
+        return ident;
     }
 
+    public ConstExpNode getConstExpNode() {
+        return constExpNode;
+    }
+
+    public InitValNode getInitValNode() {
+        return initValNode;
+    }
 }
