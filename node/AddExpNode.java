@@ -1,6 +1,7 @@
 package node;
 
 import symbol.Symbol.SymbolType;
+import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
@@ -30,7 +31,18 @@ public class AddExpNode extends Node {
         }
     }
 
-    public void matchParam(SymbolType type) {
-        mulExpNode.matchParam(type);
+    public String getType() {
+        if(op!=null){
+            return "var";
+        }else{
+            return mulExpNode.getType();
+        }
+    }
+
+    public void fill(SymbolTable table) {
+        mulExpNode.fill(table);
+        if (addExpNode != null) {
+            addExpNode.fill(table);
+        }
     }
 }

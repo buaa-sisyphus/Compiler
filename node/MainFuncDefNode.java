@@ -36,6 +36,7 @@ public class MainFuncDefNode extends Node{
         table.addChild(newTable);
         Parser.scope++;
         newTable.setScopeNum(Parser.scope);
-        block.fill(newTable);
+        newTable.setParentTable(table);
+        block.fill(newTable,true);
     }
 }

@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
@@ -18,12 +19,12 @@ public class ConstInitValNode extends Node {
 
     public ConstInitValNode(ConstExpNode constExp) {
         this.constExp = constExp;
-        this.type=NodeType.ConstInitVal;
+        this.type = NodeType.ConstInitVal;
     }
 
     public ConstInitValNode(Token stringConst) {
         this.stringConst = stringConst;
-        this.type=NodeType.ConstInitVal;
+        this.type = NodeType.ConstInitVal;
     }
 
     public ConstInitValNode(List<ConstExpNode> constExpNodes, Token lBraceToken, Token rBraceToken, List<Token> commaTokens) {
@@ -31,26 +32,41 @@ public class ConstInitValNode extends Node {
         this.lBraceToken = lBraceToken;
         this.rBraceToken = rBraceToken;
         this.commaTokens = commaTokens;
-        this.type=NodeType.ConstInitVal;
+        this.type = NodeType.ConstInitVal;
     }
 
     @Override
     public void print() {
-        if(stringConst != null) {
+        if (stringConst != null) {
             IOUtils.write(stringConst.toString());
-        }else if(constExp != null) {
+        } else if (constExp != null) {
             constExp.print();
-        }else{
+        } else {
             IOUtils.write(lBraceToken.toString());
-            if(!constExpNodes.isEmpty()){
+            if (!constExpNodes.isEmpty()) {
                 constExpNodes.get(0).print();
-                for(int i = 1; i < constExpNodes.size(); i++){
-                    IOUtils.write(commaTokens.get(i-1).toString());
+                for (int i = 1; i < constExpNodes.size(); i++) {
+                    IOUtils.write(commaTokens.get(i - 1).toString());
                     constExpNodes.get(i).print();
                 }
             }
             IOUtils.write(rBraceToken.toString());
         }
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table) {
+        if (stringConst != null) {
+            //todo
+        } else if (constExp != null) {
+            constExp.fill(table);
+        } else {
+            if (!constExpNodes.isEmpty()) {
+                constExpNodes.get(0).fill(table);
+                for (int i = 1; i < constExpNodes.size(); i++) {
+                    constExpNodes.get(i).fill(table);
+                }
+            }
+        }
     }
 }

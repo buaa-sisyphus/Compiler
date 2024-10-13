@@ -4,6 +4,8 @@ import error.ErrorHandler;
 import error.ErrorType;
 import frontend.Parser;
 import symbol.ArraySymbol;
+import symbol.FuncParam;
+import symbol.FuncSymbol;
 import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
@@ -21,33 +23,36 @@ public class FuncFParamNode extends Node {
         this.ident = ident;
         this.lBrackToken = lBrackToken;
         this.rBrackToken = rBrackToken;
-        this.type=NodeType.FuncFParam;
+        this.type = NodeType.FuncFParam;
     }
 
     @Override
     public void print() {
         bTypeNode.print();
         IOUtils.write(ident.toString());
-        if(lBrackToken != null) {
+        if (lBrackToken != null) {
             IOUtils.write(lBrackToken.toString());
             IOUtils.write(rBrackToken.toString());
         }
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table) {
-        if(table.findSymbol(ident.getContent())){
-            ErrorHandler.getInstance().addError(ErrorType.b,ident.getLineNum());
-        }else{
-            boolean isConst=false;
-            boolean isInt= bTypeNode.isInt();
-            boolean isArray=false;
+    public void fill(SymbolTable table, FuncSymbol funcSymbol) {
+        if (table.getSymbol(ident.getContent()) != null) {
+            ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
+        } else {
+            boolean isConst = false;
+            boolean isInt = bTypeNode.isInt();
+            boolean isArray = false;
             if (rBrackToken != null && lBrackToken != null) {
-                isArray=true;
+                isArray = true;
             }
             ArraySymbol arraySymbol = new ArraySymbol();
-            arraySymbol.set(ident,table.getScopeNum(),isInt,isArray,isConst);
-            table.addSymbol(arraySymbol.getName(),arraySymbol);
+            arraySymbol.set(ident, table.getScopeNum(), isInt, isArray, isConst);
+            table.addSymbol(arraySymbol.getName(), arraySymbol);
+
+            FuncParam funcParam = new FuncParam(arraySymbol.getName(), arraySymbol.getSymbolType());
+            funcSymbol.addParam(funcParam);
         }
     }
 }

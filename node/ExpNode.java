@@ -1,6 +1,8 @@
 package node;
 
+import symbol.FuncParam;
 import symbol.Symbol.SymbolType;
+import symbol.SymbolTable;
 import utils.IOUtils;
 
 // Exp → AddExp
@@ -9,7 +11,7 @@ public class ExpNode extends Node {
 
     public ExpNode(AddExpNode addExpNode) {
         this.addExpNode = addExpNode;
-        this.type=NodeType.Exp;
+        this.type = NodeType.Exp;
     }
 
     @Override
@@ -18,7 +20,11 @@ public class ExpNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void matchParam(SymbolType type) {
-        addExpNode.matchParam(type);
+    public String getType() {
+        return addExpNode.getType();
+    }
+
+    public void fill(SymbolTable table) {
+        addExpNode.fill(table);
     }
 }

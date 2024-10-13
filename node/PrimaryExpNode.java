@@ -1,6 +1,8 @@
 package node;
 
 import frontend.Parser;
+import symbol.Symbol.SymbolType;
+import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
@@ -52,16 +54,23 @@ public class PrimaryExpNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public int getValue() {
-        if(lParent!=null && rParent!=null) {
-            return expNode.getValue();
-        }else if(lValNode!=null) {
-
-        }else if(numberNode!=null) {
-            return numberNode.getNumber();
-        }else if(characterNode!=null) {
-            return characterNode.getChar();
+    public String getType() {
+        if (lParent != null || numberNode != null || characterNode != null) {
+            return "var";
+        }else {
+            return lValNode.getType();
         }
-        return 0;
+    }
+
+    public void fill(SymbolTable table){
+        if(expNode != null){
+            expNode.fill(table);
+        }else if(lValNode != null){
+            lValNode.fill(table,false);
+        }else if(numberNode != null){
+            numberNode.fill(table);
+        }else if(characterNode != null){
+            characterNode.fill(table);
+        }
     }
 }

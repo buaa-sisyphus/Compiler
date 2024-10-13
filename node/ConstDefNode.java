@@ -3,6 +3,8 @@ package node;
 import error.ErrorHandler;
 import error.ErrorType;
 import frontend.Parser;
+import symbol.ArraySymbol;
+import symbol.Symbol;
 import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
@@ -24,13 +26,13 @@ public class ConstDefNode extends Node {
         this.rBrackToken = rBrackToken;
         this.assignToken = assignToken;
         this.constInitValNode = constInitValNode;
-        this.type=NodeType.ConstDef;
+        this.type = NodeType.ConstDef;
     }
 
     @Override
     public void print() {
         IOUtils.write(ident.toString());
-        if(constExpNode != null){
+        if (constExpNode != null) {
             IOUtils.write(lBrackToken.toString());
             constExpNode.print();
             IOUtils.write(rBrackToken.toString());
@@ -40,23 +42,20 @@ public class ConstDefNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table){
-        //todo
-        if(table.findSymbol(ident.getContent())){
-
-        }else{
-            ErrorHandler.getInstance().addError(ErrorType.c,ident.getLineNum());
+    public void fill(SymbolTable table, boolean isInt) {
+        Symbol symbol = table.getSymbol(ident.getContent());
+        if (symbol != null) {
+            ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
+        } else {
+            ArraySymbol arraySymbol = new ArraySymbol();
+            boolean isArray = (lBrackToken != null);
+            arraySymbol.set(ident, table.getScopeNum(), isInt, isArray, true);
+            table.addSymbol(arraySymbol.getName(), arraySymbol);
         }
+        constInitValNode.fill(table);
     }
 
     public Token getIdent() {
         return ident;
-    }
-
-    public Boolean isArray(){
-        if(lBrackToken!=null && rBrackToken!=null){
-            return true;
-        }
-        return false;
     }
 }

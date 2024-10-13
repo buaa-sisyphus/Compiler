@@ -1,5 +1,7 @@
 package node;
 
+import error.ErrorHandler;
+import error.ErrorType;
 import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
@@ -16,7 +18,7 @@ public class BlockNode extends Node {
         this.lBraceToken = lBraceToken;
         this.blockItemNodes = blockItemNodes;
         this.rBraceToken = rBraceToken;
-        this.type=NodeType.Block;
+        this.type = NodeType.Block;
     }
 
     @Override
@@ -29,9 +31,26 @@ public class BlockNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table){
+    public void fill(SymbolTable table) {
         for (BlockItemNode blockItemNode : blockItemNodes) {
             blockItemNode.fill(table);
+        }
+    }
+
+    public void fill(SymbolTable table, boolean needReturn) {
+        int endLine = rBraceToken.getLineNum();
+        if (needReturn && (blockItemNodes == null || blockItemNodes.isEmpty())) {
+            ErrorHandler.getInstance().addError(ErrorType.g, endLine);
+            return;
+        }
+        int size = blockItemNodes.size();
+        for (int i = 0; i < size; i++) {
+            if (i == size - 1) {
+                //最后一句
+                blockItemNodes.get(i).fill(table, endLine, needReturn);
+            } else {
+                blockItemNodes.get(i).fill(table);
+            }
         }
     }
 }

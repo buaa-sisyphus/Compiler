@@ -59,39 +59,41 @@ public class UnaryExpNode extends Node {
     }
 
     public void fill(SymbolTable table) {
-        //todo
         if (primaryExpNode != null) {
-
+            primaryExpNode.fill(table);
         } else if (ident != null) {
-            if (table.findSymbol(ident.getContent())) {
-                Symbol symbol = table.getSymbol(ident.getContent());
-                if (symbol instanceof FuncSymbol) {
-                    FuncSymbol funcSymbol = (FuncSymbol) symbol;
-                    int give = funcSymbol.getParamsCount();
-                    List<FuncParam> params = funcSymbol.getParams();
-                    if(funcRParamsNode != null) {
-                        if (!funcRParamsNode.matchParamsCount(give)) {
-                            ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
-                        } else if (!funcRParamsNode.matchParams(params)) {
-
-                        }
-                    }else{
-                        if(give!=0){
-                            ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
-                        }
+            Symbol symbol = table.getSymbolDeep(ident.getContent());
+            if (symbol != null && symbol instanceof FuncSymbol) {
+                FuncSymbol funcSymbol = (FuncSymbol) symbol;
+                int give = funcSymbol.getParamsCount();
+                List<FuncParam> params = funcSymbol.getParams();
+                if (funcRParamsNode != null) {
+                    if (!funcRParamsNode.matchParamsCount(give)) {
+                        ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
+                    } else if (!funcRParamsNode.matchParams(params, table)) {
+                        ErrorHandler.getInstance().addError(ErrorType.e, ident.getLineNum());
                     }
                 } else {
-                    ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
+                    if (give != 0) {
+                        ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
+                    }
                 }
             } else {
                 ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
             }
         } else {
-
+            //todo unaryOp
+            unaryExpNode.fill(table);
         }
     }
 
-    public void matchParam(SymbolType type) {
-
+    public String getType() {
+        if (unaryOpNode != null) {
+            return "var";
+        } else if (primaryExpNode != null) {
+            return primaryExpNode.getType();
+        } else {
+            return ident.getContent();
+        }
     }
 }

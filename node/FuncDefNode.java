@@ -10,7 +10,7 @@ import token.Token;
 import utils.IOUtils;
 
 // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
-public class FuncDefNode extends Node{
+public class FuncDefNode extends Node {
     private FuncTypeNode funcTypeNode;
     private Token ident;
     private Token lParent;
@@ -25,14 +25,14 @@ public class FuncDefNode extends Node{
         this.funcFParamsNode = funcFParamsNode;
         this.rParent = rParent;
         this.blockNode = blockNode;
-        this.type=NodeType.FuncDef;
+        this.type = NodeType.FuncDef;
     }
 
-    public void print(){
+    public void print() {
         funcTypeNode.print();
         IOUtils.write(ident.toString());
         IOUtils.write(lParent.toString());
-        if(funcFParamsNode != null){
+        if (funcFParamsNode != null) {
             funcFParamsNode.print();
         }
         IOUtils.write(rParent.toString());
@@ -40,22 +40,24 @@ public class FuncDefNode extends Node{
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table){
-        if(table.findSymbol(ident.getContent())){
-            ErrorHandler.getInstance().addError(ErrorType.b,ident.getLineNum());
-        }else{
+    public void fill(SymbolTable table) {
+        if (table.findSymbol(ident.getContent())) {
+            ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
+        } else {
             FuncSymbol funcSymbol = new FuncSymbol();
-            funcSymbol.set(ident,table.getScopeNum(),funcTypeNode.getToken().getType());
+            funcSymbol.set(ident, table.getScopeNum(), funcTypeNode.getToken().getType());
             table.addSymbol(funcSymbol.getName(), funcSymbol);
+            SymbolTable newTable = new SymbolTable();
+            newTable.setParentTable(table);
+            table.addChild(newTable);
+            Parser.scope++;
+            newTable.setScopeNum(Parser.scope);
+            if (funcFParamsNode != null) {
+                funcFParamsNode.fill(newTable, funcSymbol);
+            }
+            boolean needReturn = true;
+            if (funcTypeNode.getToken().getContent().equals("void")) needReturn = false;
+            blockNode.fill(newTable,needReturn);
         }
-        SymbolTable newTable = new SymbolTable();
-        newTable.setParentTable(table);
-        table.addChild(newTable);
-        Parser.scope++;
-        newTable.setScopeNum(Parser.scope);
-        if(funcFParamsNode != null){
-            funcFParamsNode.fill(newTable);
-        }
-        blockNode.fill(newTable);
     }
 }

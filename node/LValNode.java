@@ -3,6 +3,7 @@ package node;
 import error.ErrorHandler;
 import error.ErrorType;
 import frontend.Parser;
+import symbol.Symbol;
 import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
@@ -20,7 +21,7 @@ public class LValNode extends Node {
         this.lBrackToken = lBrackToken;
         this.rBrackToken = rBrackToken;
         this.expNode = expNode;
-        this.type=NodeType.LVal;
+        this.type = NodeType.LVal;
     }
 
     @Override
@@ -34,12 +35,19 @@ public class LValNode extends Node {
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table){
-        //todo
-        if(table.findSymbol(ident.getContent())){
-
-        }else{
-            ErrorHandler.getInstance().addError(ErrorType.c,ident.getLineNum());
+    public void fill(SymbolTable table,boolean isAssign) {
+        Symbol symbol = table.getSymbolDeep(ident.getContent());
+        if (symbol != null) {
+            if(symbol.getSymbolType().toString().contains("Const") && isAssign){
+                ErrorHandler.getInstance().addError(ErrorType.h,ident.getLineNum());
+            }
+        } else {
+            ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
         }
+    }
+
+    public String getType() {
+        if (lBrackToken != null) return "var";
+        else return ident.getContent();
     }
 }

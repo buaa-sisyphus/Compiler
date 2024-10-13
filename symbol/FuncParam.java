@@ -1,6 +1,7 @@
 package symbol;
 
 import symbol.Symbol.SymbolType;
+import token.Token;
 
 public class FuncParam {
     private String funcName;

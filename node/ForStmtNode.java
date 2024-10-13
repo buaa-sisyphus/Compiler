@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import token.TokenType;
 import utils.IOUtils;
@@ -24,5 +25,9 @@ public class ForStmtNode extends Node{
         IOUtils.write(assignToken.toString());
         expNode.print();
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table){
+
     }
 }

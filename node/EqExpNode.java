@@ -1,6 +1,7 @@
 package node;
 
 import frontend.Parser;
+import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 
@@ -27,6 +28,13 @@ public class EqExpNode extends Node {
         if (eqExpNode != null) {
             IOUtils.write(op.toString());
             eqExpNode.print();
+        }
+    }
+
+    public void fill(SymbolTable table) {
+        relExpNode.fill(table);
+        if(eqExpNode != null) {
+            eqExpNode.fill(table);
         }
     }
 }

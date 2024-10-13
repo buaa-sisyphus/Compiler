@@ -1,9 +1,13 @@
 package node;
 
+import error.ErrorHandler;
+import error.ErrorType;
 import frontend.Parser;
 import symbol.SymbolTable;
 import token.Token;
+import utils.CalUtils;
 import utils.IOUtils;
+
 import java.util.List;
 
 /**
@@ -20,6 +24,7 @@ import java.util.List;
  * | 'printf''('StringConst {','Exp}')'';'
  */
 public class StmtNode extends Node {
+    public static int loop = 0;
     private BlockNode blockNode;
     private CondNode condNode;
     private ExpNode expNode;
@@ -250,15 +255,17 @@ public class StmtNode extends Node {
         }
     }
 
-    public void fill(SymbolTable table){
+    public void fill(SymbolTable table) {
         switch (stmtType) {
             case LVal:
                 // Stmt → LVal '=' Exp ';'
-
+                lValNode.fill(table,true);
                 break;
             case Exp:
                 // Stmt → [Exp] ';'
-
+                if (expNode != null) {
+                    expNode.fill(table);
+                }
                 break;
             case If:
                 //Stmt → 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
@@ -269,12 +276,16 @@ public class StmtNode extends Node {
                 break;
             case For:
                 //Stmt → 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
+                loop++;
                 stmtNode.fill(table);
+                loop--;
                 break;
             case Break:
             case Continue:
                 // Stmt → 'break' ';' | 'continue' ';'
-
+                if (loop == 0) {
+                    ErrorHandler.getInstance().addError(ErrorType.m, breakToken.getLineNum());
+                }
                 break;
             case Return:
                 // Stmt → 'return' [Exp] ';'
@@ -282,24 +293,44 @@ public class StmtNode extends Node {
                 break;
             case Printf:
                 // Stmt → 'printf''('StringConst {','Exp}')'';'
-
+                int cnt = CalUtils.calFormatSpecifiers(stringToken.getContent());
+                int size = expNodes.size();
+                if (cnt != size) ErrorHandler.getInstance().addError(ErrorType.i, printfToken.getLineNum());
                 break;
             case GetChar:
             case GetInt:
                 // Stmt → LVal '=' 'getint''('')'';' | LVal '=' 'getchar''('')'';'
-
+                lValNode.fill(table,true);
                 break;
             case Block:
                 // Stmt → Block
-                SymbolTable newTable=new SymbolTable();
+                SymbolTable newTable = new SymbolTable();
                 table.addChild(newTable);
                 Parser.scope++;
                 newTable.setScopeNum(Parser.scope);
+                newTable.setParentTable(table);
                 blockNode.fill(newTable);
                 break;
             default:
                 System.out.println("StmtType Error");
                 break;
         }
+    }
+
+    public void handleReturn(SymbolTable table) {
+        switch (stmtType) {
+            case Return:
+                if (expNode != null) {
+                    ErrorHandler.getInstance().addError(ErrorType.f, returnToken.getLineNum());
+                }
+                break;
+            default:
+                fill(table);
+                break;
+        }
+    }
+
+    public StmtType getStmtType() {
+        return stmtType;
     }
 }

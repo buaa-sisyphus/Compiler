@@ -3,10 +3,11 @@ package symbol;
 import token.Token;
 import token.TokenType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FuncSymbol extends Symbol {
-    private List<FuncParam> params;
+    private List<FuncParam> params = new ArrayList<>();
 
     public FuncSymbol() {
     }
@@ -30,5 +31,13 @@ public class FuncSymbol extends Symbol {
 
     public List<FuncParam> getParams() {
         return params;
+    }
+
+    public void addParam(FuncParam param) {
+        params.add(param);
+    }
+
+    public SymbolType getSymbolType() {
+        return symbolType;
     }
 }

@@ -33,27 +33,18 @@ public class ConstDeclNode extends Node {
         bTypeNode.print();
         constDefNodes.get(0).print();
         for (int i = 1; i < constDefNodes.size(); i++) {
-            IOUtils.write(commaTokens.get(i-1).toString());
+            IOUtils.write(commaTokens.get(i - 1).toString());
             constDefNodes.get(i).print();
         }
         IOUtils.write(semicnToken.toString());
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table){
-        boolean isConst=true;
-        boolean isInt=bTypeNode.isInt();
+    public void fill(SymbolTable table) {
+        boolean isInt = bTypeNode.isInt();
         for (int i = 0; i < constDefNodes.size(); i++) {
             ConstDefNode constDefNode = constDefNodes.get(i);
-            Token ident=constDefNode.getIdent();
-            if(table.findSymbol(ident.getContent())){
-                ErrorHandler.getInstance().addError(ErrorType.b,ident.getLineNum());
-            }else{
-                ArraySymbol arraySymbol = new ArraySymbol();
-                boolean isArray = constDefNode.isArray();
-                arraySymbol.set(ident, table.getScopeNum(),isInt,isArray,isConst);
-                table.addSymbol(arraySymbol.getName(),arraySymbol);
-            }
+            constDefNode.fill(table, isInt);
         }
     }
 }

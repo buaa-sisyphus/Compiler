@@ -20,10 +20,15 @@ public abstract class Symbol {
         IntFunc,
     }
 
-    public Symbol() {}
+    public Symbol() {
+    }
 
     public String getName() {
         return name;
+    }
+
+    public SymbolType getSymbolType() {
+        return symbolType;
     }
 
     @Override

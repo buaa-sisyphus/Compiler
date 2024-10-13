@@ -1,5 +1,6 @@
 package node;
 
+import symbol.SymbolTable;
 import utils.IOUtils;
 
 //ConstExp → AddExp
@@ -15,5 +16,9 @@ public class ConstExpNode extends Node {
     public void print() {
         addExpNode.print();
         IOUtils.write(typeToString());
+    }
+
+    public void fill(SymbolTable table) {
+        addExpNode.fill(table);
     }
 }

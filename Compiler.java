@@ -13,13 +13,13 @@ public class Compiler {
         IOUtils.empty("symbol.txt");
         Lexer lexer = Lexer.getLexer();
         ErrorHandler handler=ErrorHandler.getInstance();
+//        IOUtils.writeTokens(lexer.getTokens());
         lexer.analyze();
-        IOUtils.writeTokens(lexer.getTokens());
         Parser parser = new Parser(lexer.getTokens());
         parser.analyze();
-        parser.print();
+//        parser.print();
         parser.fill();
-        IOUtils.write(parser.getSymbolTable());
-        IOUtils.writeErrors(handler.getErrors());
+        if(handler.getErrors().isEmpty()) IOUtils.write(parser.getSymbolTable());
+//        else IOUtils.writeErrors(handler.getErrors());
     }
 }

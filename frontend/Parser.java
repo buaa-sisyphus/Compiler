@@ -56,7 +56,7 @@ public class Parser {
         if (compUnitNode != null) compUnitNode.print();
     }
 
-    public void fill(){
+    public void fill() {
         if (compUnitNode != null) compUnitNode.fill(symbolTable);
     }
 
@@ -243,7 +243,7 @@ public class Parser {
         Token ident = match(TokenType.IDENFR);
         Token lParentToken = match(TokenType.LPARENT);
         FuncFParamsNode funcFParamsNode = null;
-        if (tokens.get(index).getType() != TokenType.RPARENT) {
+        if (isFuncFParams()) {
             funcFParamsNode = FuncFParams();
         }
         Token rParentToken = match(TokenType.RPARENT);
@@ -491,7 +491,7 @@ public class Parser {
             // Stmt → 'return' [Exp] ';'
             Token returnToken = match(TokenType.RETURNTK);
             ExpNode expNode = null;
-            if (tokens.get(index).getType() != TokenType.SEMICN) expNode = Exp();
+            if (isExp()) expNode = Exp();
             Token semicnToken = match(TokenType.SEMICN);
             return new StmtNode(StmtNode.StmtType.Return, returnToken, semicnToken, expNode);
         } else if (tokens.get(index).getType() == TokenType.PRINTFTK) {
@@ -551,7 +551,7 @@ public class Parser {
             } else {
                 // Stmt → [Exp] ';'
                 ExpNode expNode = null;
-                if (tokens.get(index).getType() != TokenType.SEMICN) {
+                if (isExp()) {
                     expNode = Exp();
                 }
                 Token semicnToken = match(TokenType.SEMICN);
@@ -571,7 +571,7 @@ public class Parser {
             Token identToken = match(TokenType.IDENFR);
             Token lParentToken = match(TokenType.LPARENT);
             FuncRParamsNode funcRParamsNode = null;
-            if (tokens.get(index).getType() != TokenType.RPARENT) {
+            if (isExp()) {
                 funcRParamsNode = FuncRParams();
             }
             Token rParentToken = match(TokenType.RPARENT);
@@ -631,5 +631,20 @@ public class Parser {
 
     public SymbolTable getSymbolTable() {
         return symbolTable;
+    }
+
+    private boolean isExp() {
+        return tokens.get(index).getType() == TokenType.IDENFR ||
+                tokens.get(index).getType() == TokenType.PLUS ||
+                tokens.get(index).getType() == TokenType.MINU ||
+                tokens.get(index).getType() == TokenType.NOT ||
+                tokens.get(index).getType() == TokenType.LPARENT ||
+                tokens.get(index).getType() == TokenType.INTCON ||
+                tokens.get(index).getType() == TokenType.CHRCON;
+    }
+
+    private boolean isFuncFParams() {
+        return tokens.get(index).getType() == TokenType.INTTK ||
+                tokens.get(index).getType() == TokenType.CHARTK;
     }
 }

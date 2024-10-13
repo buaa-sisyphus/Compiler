@@ -29,27 +29,18 @@ public class VarDeclNode extends Node {
         bTypeNode.print();
         varDefNodes.get(0).print();
         for (int i = 1; i < varDefNodes.size(); i++) {
-            IOUtils.write(commaTokens.get(i-1).toString());
+            IOUtils.write(commaTokens.get(i - 1).toString());
             varDefNodes.get(i).print();
         }
         IOUtils.write(semicnToken.toString());
         IOUtils.write(typeToString());
     }
 
-    public void fill(SymbolTable table){
-        boolean isConst=false;
-        boolean isInt=bTypeNode.isInt();
+    public void fill(SymbolTable table) {
+        boolean isInt = bTypeNode.isInt();
         for (int i = 0; i < varDefNodes.size(); i++) {
             VarDefNode varDefNode = varDefNodes.get(i);
-            Token ident=varDefNode.getIdent();
-            if(table.findSymbol(ident.getContent())){
-                ErrorHandler.getInstance().addError(ErrorType.b,ident.getLineNum());
-            }else{
-                ArraySymbol arraySymbol = new ArraySymbol();
-                boolean isArray = varDefNode.isArray();
-                arraySymbol.set(ident, table.getScopeNum(),isInt,isArray,isConst);
-                table.addSymbol(arraySymbol.getName(),arraySymbol);
-            }
+            varDefNode.fill(table,isInt);
         }
     }
 }

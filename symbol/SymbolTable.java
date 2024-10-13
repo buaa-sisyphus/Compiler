@@ -33,6 +33,17 @@ public class SymbolTable {
         return symbolTable.get(ident);
     }
 
+    public Symbol getSymbolDeep(String ident) {
+        Symbol symbol = null;
+        for (SymbolTable table = this; table != null; table = table.parentTable) {
+            symbol = table.getSymbol(ident);
+            if (symbol != null) {
+                return symbol;
+            }
+        }
+        return symbol;
+    }
+
     public Set<Map.Entry<String, Symbol>> entrySet() {
         return symbolTable.entrySet();
     }
