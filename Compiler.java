@@ -21,7 +21,5 @@ public class Compiler {
         builder.build(parser.getCompUnitNode());
         if(handler.getErrors().isEmpty()) IOUtils.write(builder.getRootTable());
         else IOUtils.writeErrors(handler.getErrors());
-//        IOUtils.write(builder.getRootTable());
-//        IOUtils.writeErrors(handler.getErrors());
     }
 }

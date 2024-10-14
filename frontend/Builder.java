@@ -54,6 +54,7 @@ public class Builder {
         root = new SymbolTable();
         root.setScopeNum(scope);
         root.setNeedReturn(false);
+        root.setFunc(false);
         cur = root;
     }
 
@@ -181,7 +182,6 @@ public class Builder {
                 break;
         }
     }
-
 
     private int BType(BTypeNode bTypeNode) {
         if (bTypeNode.getToken().getType() == TokenType.INTTK) {
@@ -314,6 +314,10 @@ public class Builder {
         } else if (unaryExpNode.getIdent() != null) {
             Token ident = unaryExpNode.getIdent();
             Symbol symbol = cur.getSymbolDeep(ident.getContent());
+            if (symbol == null) {
+                ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
+                return;
+            }
             if (symbol instanceof FuncSymbol) {
                 FuncSymbol funcSymbol = (FuncSymbol) symbol;
                 int give = funcSymbol.getParamsCount();
@@ -334,7 +338,8 @@ public class Builder {
                     }
                 }
             } else {
-                ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
+                //是什么类型错误？
+                ErrorHandler.getInstance().addError(ErrorType.e, ident.getLineNum());
             }
         } else {
             UnaryExp(unaryExpNode.getUnaryExpNode());
@@ -367,14 +372,16 @@ public class Builder {
         int con = 0;
         Token ident = funcDefNode.getIdent();
         Symbol symbol = cur.getSymbol(ident.getContent());
+        FuncSymbol funcSymbol=null;
         if (symbol != null) {
             //如果发现一个重命名的，需要立即返回吗？
             ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
-            return;
+//            return;
+        }else{
+            funcSymbol = new FuncSymbol();
+            funcSymbol.set(ident, cur.getScopeNum(), type, btype, con);
+            cur.addSymbol(ident.getContent(), funcSymbol);
         }
-        FuncSymbol funcSymbol = new FuncSymbol();
-        funcSymbol.set(ident, cur.getScopeNum(), type, btype, con);
-        cur.addSymbol(ident.getContent(), funcSymbol);
         //新建表
         pushTable(needReturn, isFunc);
         if (funcDefNode.getFuncFParamsNode() != null) {
@@ -403,7 +410,7 @@ public class Builder {
         }
         ArraySymbol arraySymbol = new ArraySymbol();
         arraySymbol.set(ident, cur.getScopeNum(), type, btype, 0);
-        funcSymbol.addParam(new FuncParam(arraySymbol.getName(), btype, type));
+        if(funcSymbol!=null) funcSymbol.addParam(new FuncParam(arraySymbol.getName(), btype, type));
         cur.addSymbol(ident.getContent(), arraySymbol);
     }
 

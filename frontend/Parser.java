@@ -24,7 +24,10 @@ public class Parser {
     private Token match(TokenType type) {
         if (tokens.get(index).getType() == type) {
             Token token = tokens.get(index);
-            index++;
+//            index++;
+            if (index < tokens.size() - 1) {
+                index++;
+            }
             return token;
         } else if (type == TokenType.SEMICN) {
             Token token = tokens.get(index - 1);
@@ -179,6 +182,11 @@ public class Parser {
                     commaTokens.add(match(TokenType.COMMA));
                     constExpNodes.add(ConstExp());
                 }
+                //!!!!!!!!!!!!!!!!!!!!!!!!!
+//                while (tokens.get(index).getType() != TokenType.RBRACE) {
+//                    commaTokens.add(match(TokenType.COMMA));
+//                    constExpNodes.add(ConstExp());
+//                }
             }
             Token rBraceToken = match(TokenType.RBRACE);
             return new ConstInitValNode(constExpNodes, lBraceToken, rBraceToken, commaTokens);
@@ -407,8 +415,6 @@ public class Parser {
         } else if (tokens.get(index).getType() == TokenType.IDENFR) {
             LValNode lValNode = LVal();
             return new PrimaryExpNode(lValNode);
-        } else {
-            //todo error
         }
         return null;
     }
@@ -461,7 +467,10 @@ public class Parser {
                 forStmtNodeFir = ForStmt();
             }
             semicnTokens.add(match(TokenType.SEMICN));
-            if (tokens.get(index).getType() != TokenType.SEMICN) {
+//            if (tokens.get(index).getType() != TokenType.SEMICN) {
+//                condNode = Cond();
+//            }
+            if (isExp()) {
                 condNode = Cond();
             }
             semicnTokens.add(match(TokenType.SEMICN));
@@ -509,6 +518,9 @@ public class Parser {
         } else {
             boolean flag = false;
             for (int i = index; i < tokens.size(); i++) {
+                if (tokens.get(i).getLineNum() != tokens.get(index).getLineNum()) {
+                    break;
+                }
                 if (tokens.get(i).getType() == TokenType.SEMICN) {
                     break;
                 }
@@ -552,7 +564,6 @@ public class Parser {
                 return new StmtNode(StmtNode.StmtType.Exp, expNode, semicnToken);
             }
         }
-
     }
 
     private UnaryExpNode UnaryExp() {
