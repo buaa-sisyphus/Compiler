@@ -157,8 +157,11 @@ public class Builder {
                 // Stmt → 'printf''('StringConst {','Exp}')'';'
                 List<ExpNode> expNodes = stmtNode.getExpNodes();
                 int cnt = CalUtils.calFormatSpecifiers(stmtNode.getStringToken().getContent());
-                if (cnt != expNodes.size()) {
-                    ErrorHandler.getInstance().addError(ErrorType.i, stmtNode.getPrintfToken().getLineNum());
+                if (expNodes == null) {
+                    if (cnt != 0)
+                        ErrorHandler.getInstance().addError(ErrorType.l, stmtNode.getPrintfToken().getLineNum());
+                } else if (cnt != expNodes.size()) {
+                    ErrorHandler.getInstance().addError(ErrorType.l, stmtNode.getPrintfToken().getLineNum());
                 }
                 for (ExpNode expNode1 : expNodes) {
                     Exp(expNode1);
@@ -327,14 +330,18 @@ public class Builder {
                     if (!funcRParamsNode.matchParamsCount(give)) {
                         // 数量不匹配
                         ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
+                        return;
                     } else if (!funcRParamsNode.matchParams(params, cur)) {
                         // 类型不匹配
                         ErrorHandler.getInstance().addError(ErrorType.e, ident.getLineNum());
+                        return;
                     }
+                    FuncRParams(funcRParamsNode);
                 } else {
                     if (give != 0) {
                         // 数量不匹配
                         ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
+                        return;
                     }
                 }
             } else {
@@ -372,12 +379,12 @@ public class Builder {
         int con = 0;
         Token ident = funcDefNode.getIdent();
         Symbol symbol = cur.getSymbol(ident.getContent());
-        FuncSymbol funcSymbol=null;
+        FuncSymbol funcSymbol = null;
         if (symbol != null) {
             //如果发现一个重命名的，需要立即返回吗？
             ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
 //            return;
-        }else{
+        } else {
             funcSymbol = new FuncSymbol();
             funcSymbol.set(ident, cur.getScopeNum(), type, btype, con);
             cur.addSymbol(ident.getContent(), funcSymbol);
@@ -410,8 +417,15 @@ public class Builder {
         }
         ArraySymbol arraySymbol = new ArraySymbol();
         arraySymbol.set(ident, cur.getScopeNum(), type, btype, 0);
-        if(funcSymbol!=null) funcSymbol.addParam(new FuncParam(arraySymbol.getName(), btype, type));
+        if (funcSymbol != null) funcSymbol.addParam(new FuncParam(arraySymbol.getName(), btype, type));
         cur.addSymbol(ident.getContent(), arraySymbol);
+    }
+
+    private void FuncRParams(FuncRParamsNode funcRParamsNode) {
+        // FuncRParams → Exp { ',' Exp }
+        for (ExpNode expNode : funcRParamsNode.getExpNodes()) {
+            Exp(expNode);
+        }
     }
 
     private void ForStmt(ForStmtNode forStmtNode) {

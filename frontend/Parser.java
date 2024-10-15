@@ -467,9 +467,6 @@ public class Parser {
                 forStmtNodeFir = ForStmt();
             }
             semicnTokens.add(match(TokenType.SEMICN));
-//            if (tokens.get(index).getType() != TokenType.SEMICN) {
-//                condNode = Cond();
-//            }
             if (isExp()) {
                 condNode = Cond();
             }
