@@ -14,7 +14,7 @@ public class ConstExpNode extends Node {
     @Override
     public void print() {
         addExpNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public AddExpNode getAddExpNode() {

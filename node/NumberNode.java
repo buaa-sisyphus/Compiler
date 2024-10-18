@@ -14,8 +14,8 @@ public class NumberNode extends Node {
 
     @Override
     public void print() {
-        IOUtils.write(intConst.toString());
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(intConst.toString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public int getNumber() {

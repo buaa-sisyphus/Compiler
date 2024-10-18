@@ -19,9 +19,9 @@ public class ForStmtNode extends Node{
     @Override
     public void print() {
         lValNode.print();
-        IOUtils.write(assignToken.toString());
+        IOUtils.writeSymbol(assignToken.toString());
         expNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public ExpNode getExpNode() {

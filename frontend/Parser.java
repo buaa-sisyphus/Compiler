@@ -24,7 +24,6 @@ public class Parser {
     private Token match(TokenType type) {
         if (tokens.get(index).getType() == type) {
             Token token = tokens.get(index);
-//            index++;
             if (index < tokens.size() - 1) {
                 index++;
             }
@@ -182,11 +181,6 @@ public class Parser {
                     commaTokens.add(match(TokenType.COMMA));
                     constExpNodes.add(ConstExp());
                 }
-                //!!!!!!!!!!!!!!!!!!!!!!!!!
-//                while (tokens.get(index).getType() != TokenType.RBRACE) {
-//                    commaTokens.add(match(TokenType.COMMA));
-//                    constExpNodes.add(ConstExp());
-//                }
             }
             Token rBraceToken = match(TokenType.RBRACE);
             return new ConstInitValNode(constExpNodes, lBraceToken, rBraceToken, commaTokens);
@@ -516,9 +510,6 @@ public class Parser {
             boolean flag = false;
             for (int i = index; i < tokens.size(); i++) {
                 if (tokens.get(i).getLineNum() != tokens.get(index).getLineNum()) {
-                    break;
-                }
-                if (tokens.get(i).getType() == TokenType.SEMICN) {
                     break;
                 }
                 if (tokens.get(i).getType() == TokenType.ASSIGN) {

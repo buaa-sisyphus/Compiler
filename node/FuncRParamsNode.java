@@ -22,10 +22,10 @@ public class FuncRParamsNode extends Node {
     public void print() {
         expNodes.get(0).print();
         for (int i = 1; i < expNodes.size(); i++) {
-            IOUtils.write(commaTokens.get(i - 1).toString());
+            IOUtils.writeSymbol(commaTokens.get(i - 1).toString());
             expNodes.get(i).print();
         }
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public boolean matchParamsCount(int give) {
@@ -45,10 +45,12 @@ public class FuncRParamsNode extends Node {
             } else {
                 String symbolType = table.getSymbolDeep(tmp).toType();
                 if (symbolType.contains("Array") && paramType.contains("Array")) {
-                    if ((symbolType.contains("Int") && paramType.contains("Char")) || (symbolType.contains("Char") && paramType.contains("Int"))) {
+                    if ((symbolType.contains("Int") && paramType.contains("Char")) ||
+                            (symbolType.contains("Char") && paramType.contains("Int"))) {
                         return false;
                     }
-                } else if ((symbolType.contains("Array") && !paramType.contains("Array")) || (!symbolType.contains("Array") && paramType.contains("Array"))) {
+                } else if ((symbolType.contains("Array") && !paramType.contains("Array"))
+                        || (!symbolType.contains("Array") && paramType.contains("Array"))) {
                     return false;
                 }
             }

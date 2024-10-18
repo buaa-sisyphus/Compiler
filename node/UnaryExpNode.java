@@ -37,17 +37,17 @@ public class UnaryExpNode extends Node {
         if (primaryExpNode != null) {
             primaryExpNode.print();
         } else if (ident != null) {
-            IOUtils.write(ident.toString());
-            IOUtils.write(lParent.toString());
+            IOUtils.writeSymbol(ident.toString());
+            IOUtils.writeSymbol(lParent.toString());
             if (funcRParamsNode != null) {
                 funcRParamsNode.print();
             }
-            IOUtils.write(rParent.toString());
+            IOUtils.writeSymbol(rParent.toString());
         } else {
             unaryOpNode.print();
             unaryExpNode.print();
         }
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public String getType() {

@@ -22,9 +22,9 @@ public class EqExpNode extends Node {
     @Override
     public void print() {
         relExpNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
         if (eqExpNode != null) {
-            IOUtils.write(op.toString());
+            IOUtils.writeSymbol(op.toString());
             eqExpNode.print();
         }
     }

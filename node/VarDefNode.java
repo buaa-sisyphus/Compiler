@@ -24,17 +24,17 @@ public class VarDefNode extends Node {
 
     @Override
     public void print() {
-        IOUtils.write(ident.toString());
+        IOUtils.writeSymbol(ident.toString());
         if (lBrackToken != null) {
-            IOUtils.write(lBrackToken.toString());
+            IOUtils.writeSymbol(lBrackToken.toString());
             constExpNode.print();
-            IOUtils.write(rBrackToken.toString());
+            IOUtils.writeSymbol(rBrackToken.toString());
         }
         if (initValNode != null) {
-            IOUtils.write(assignToken.toString());
+            IOUtils.writeSymbol(assignToken.toString());
             initValNode.print();
         }
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public Token getIdent() {

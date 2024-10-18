@@ -14,8 +14,8 @@ public class FuncTypeNode extends Node {
 
     @Override
     public void print() {
-        IOUtils.write(token.toString());
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(token.toString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public Token getToken() {

@@ -1,7 +1,6 @@
 package node;
 
 import token.Token;
-import token.TokenType;
 import utils.IOUtils;
 
 // FuncFParam → BType Ident ['[' ']']
@@ -22,12 +21,12 @@ public class FuncFParamNode extends Node {
     @Override
     public void print() {
         bTypeNode.print();
-        IOUtils.write(ident.toString());
+        IOUtils.writeSymbol(ident.toString());
         if (lBrackToken != null) {
-            IOUtils.write(lBrackToken.toString());
-            IOUtils.write(rBrackToken.toString());
+            IOUtils.writeSymbol(lBrackToken.toString());
+            IOUtils.writeSymbol(rBrackToken.toString());
         }
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public BTypeNode getbTypeNode() {

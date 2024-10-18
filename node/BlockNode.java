@@ -20,12 +20,12 @@ public class BlockNode extends Node {
 
     @Override
     public void print() {
-        IOUtils.write(lBraceToken.toString());
+        IOUtils.writeSymbol(lBraceToken.toString());
         for (BlockItemNode blockItemNode : blockItemNodes) {
             blockItemNode.print();
         }
-        IOUtils.write(rBraceToken.toString());
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(rBraceToken.toString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public List<BlockItemNode> getBlockItemNodes() {

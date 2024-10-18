@@ -24,15 +24,15 @@ public class ConstDefNode extends Node {
 
     @Override
     public void print() {
-        IOUtils.write(ident.toString());
+        IOUtils.writeSymbol(ident.toString());
         if (constExpNode != null) {
-            IOUtils.write(lBrackToken.toString());
+            IOUtils.writeSymbol(lBrackToken.toString());
             constExpNode.print();
-            IOUtils.write(rBrackToken.toString());
+            IOUtils.writeSymbol(rBrackToken.toString());
         }
-        IOUtils.write(assignToken.toString());
+        IOUtils.writeSymbol(assignToken.toString());
         constInitValNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public Token getIdent() {

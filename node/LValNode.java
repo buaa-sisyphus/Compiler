@@ -20,13 +20,13 @@ public class LValNode extends Node {
 
     @Override
     public void print() {
-        IOUtils.write(ident.toString());
+        IOUtils.writeSymbol(ident.toString());
         if (expNode != null) {
-            IOUtils.write(lBrackToken.toString());
+            IOUtils.writeSymbol(lBrackToken.toString());
             expNode.print();
-            IOUtils.write(rBrackToken.toString());
+            IOUtils.writeSymbol(rBrackToken.toString());
         }
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public String getType() {

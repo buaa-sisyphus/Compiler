@@ -22,9 +22,9 @@ public class RelExpNode extends Node{
     @Override
     public void print() {
         addExpNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
         if (relExpNode != null) {
-            IOUtils.write(op.toString());
+            IOUtils.writeSymbol(op.toString());
             relExpNode.print();
         }
     }

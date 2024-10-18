@@ -13,7 +13,7 @@ public class BTypeNode extends Node{
     }
 
     public void print() {
-        IOUtils.write(token.toString());
+        IOUtils.writeSymbol(token.toString());
     }
 
     public Token getToken() {

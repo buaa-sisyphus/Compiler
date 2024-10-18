@@ -20,10 +20,10 @@ public class FuncFParamsNode extends Node {
     public void print() {
         funcFParamNodes.get(0).print();
         for (int i = 1; i < funcFParamNodes.size(); i++) {
-            IOUtils.write(commaTokens.get(i-1).toString());
+            IOUtils.writeSymbol(commaTokens.get(i-1).toString());
             funcFParamNodes.get(i).print();
         }
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public List<FuncFParamNode> getFuncFParamNodes() {

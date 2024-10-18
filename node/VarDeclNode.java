@@ -24,11 +24,11 @@ public class VarDeclNode extends Node {
         bTypeNode.print();
         varDefNodes.get(0).print();
         for (int i = 1; i < varDefNodes.size(); i++) {
-            IOUtils.write(commaTokens.get(i - 1).toString());
+            IOUtils.writeSymbol(commaTokens.get(i - 1).toString());
             varDefNodes.get(i).print();
         }
-        IOUtils.write(semicnToken.toString());
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(semicnToken.toString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public BTypeNode getbTypeNode() {

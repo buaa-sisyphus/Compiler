@@ -25,7 +25,7 @@ public class CompUnitNode extends Node{
             funcDefNode.print();
         }
         mainFuncDefNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public List<DeclNode> getDeclNodes() {

@@ -35,21 +35,21 @@ public class InitValNode extends Node {
     @Override
     public void print() {
         if (stringConst != null) {
-            IOUtils.write(stringConst.toString());
+            IOUtils.writeSymbol(stringConst.toString());
         } else if (expNode != null) {
             expNode.print();
         } else {
-            IOUtils.write(lBrackToken.toString());
+            IOUtils.writeSymbol(lBrackToken.toString());
             if (!expNodes.isEmpty()) {
                 expNodes.get(0).print();
                 for (int i = 1; i < expNodes.size(); i++) {
-                    IOUtils.write(commaTokens.get(i-1).toString());
+                    IOUtils.writeSymbol(commaTokens.get(i-1).toString());
                     expNodes.get(i).print();
                 }
             }
-            IOUtils.write(rBrackToken.toString());
+            IOUtils.writeSymbol(rBrackToken.toString());
         }
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public ExpNode getExpNode() {

@@ -14,8 +14,8 @@ public class UnaryOpNode extends Node {
 
     @Override
     public void print() {
-        IOUtils.write(op.toString());
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(op.toString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public Token getOp() {

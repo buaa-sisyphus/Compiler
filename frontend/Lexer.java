@@ -56,7 +56,6 @@ public class Lexer {
                         break;
                     }
                 }
-                //System.out.println("标识符：" + str);
                 tokens.add(new Token(keywords.getOrDefault(str, TokenType.IDENFR), lineNum, str));
             } else if (Character.isDigit(c)) {
                 //数字
@@ -71,7 +70,6 @@ public class Lexer {
                         break;
                     }
                 }
-                //System.out.println("数字：" + str);
                 tokens.add(new Token(TokenType.INTCON, lineNum, str));
             } else if (c == '\"') {
                 // 字符串
@@ -88,15 +86,10 @@ public class Lexer {
                     } else if (c == '\"') {
                         str += c;
                         break;
-                    } else if (c == '\n') {
-                        //todo
-                        //System.out.println("字符串有问题");
-                        break;
                     } else {
                         str += c;
                     }
                 }
-                //System.out.println("字符串：" + str);
                 tokens.add(new Token(TokenType.STRCON, lineNum, str));
             } else if (c == '\'') {
                 // 字符
@@ -128,13 +121,9 @@ public class Lexer {
                             }
                         } else if (i == 1) {
                             if (c == '\'') break; //不是转义字符
-                            else {
-                                //todo
-                            }
                         }
                     }
                 }
-                //System.out.println("字符：" + str);
                 tokens.add(new Token(TokenType.CHRCON, lineNum, str));
             } else if (c == '!') {
                 // !或!=

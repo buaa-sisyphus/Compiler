@@ -35,21 +35,21 @@ public class ConstInitValNode extends Node {
     @Override
     public void print() {
         if (stringConst != null) {
-            IOUtils.write(stringConst.toString());
+            IOUtils.writeSymbol(stringConst.toString());
         } else if (constExp != null) {
             constExp.print();
         } else {
-            IOUtils.write(lBraceToken.toString());
+            IOUtils.writeSymbol(lBraceToken.toString());
             if (!constExpNodes.isEmpty()) {
                 constExpNodes.get(0).print();
                 for (int i = 1; i < constExpNodes.size(); i++) {
-                    IOUtils.write(commaTokens.get(i - 1).toString());
+                    IOUtils.writeSymbol(commaTokens.get(i - 1).toString());
                     constExpNodes.get(i).print();
                 }
             }
-            IOUtils.write(rBraceToken.toString());
+            IOUtils.writeSymbol(rBraceToken.toString());
         }
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public ConstExpNode getConstExp() {

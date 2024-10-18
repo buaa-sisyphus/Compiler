@@ -21,9 +21,9 @@ public class AddExpNode extends Node {
 
     public void print() {
         mulExpNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
         if (addExpNode != null) {
-            IOUtils.write(op.toString());
+            IOUtils.writeSymbol(op.toString());
             addExpNode.print();
         }
     }

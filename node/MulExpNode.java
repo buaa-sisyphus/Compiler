@@ -22,9 +22,9 @@ public class MulExpNode extends Node {
     @Override
     public void print() {
         unaryExpNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
         if (mulExpNode != null) {
-            IOUtils.write(op.toString());
+            IOUtils.writeSymbol(op.toString());
             mulExpNode.print();
         }
     }

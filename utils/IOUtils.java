@@ -1,6 +1,5 @@
 package utils;
 
-import org.w3c.dom.Node;
 import symbol.Symbol;
 import symbol.SymbolTable;
 import token.Token;
@@ -11,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public class IOUtils {
-    public static void writeTokens(List<Token> tokens) throws FileNotFoundException, UnsupportedEncodingException {
+    public static void writeTokens(List<Token> tokens) throws IOException {
         File outputFile = new File("lexer.txt");
         PrintWriter out = new PrintWriter(outputFile, "UTF-8");
         for (Token token : tokens) {
@@ -20,7 +19,7 @@ public class IOUtils {
         out.close();
     }
 
-    public static void writeErrors(List<Error> errors) throws FileNotFoundException, UnsupportedEncodingException {
+    public static void writeErrors(List<Error> errors) throws IOException {
         File outputFile = new File("error.txt");
         PrintWriter out = new PrintWriter(outputFile, "UTF-8");
         for (Error error : errors) {
@@ -29,7 +28,7 @@ public class IOUtils {
         out.close();
     }
 
-    public static void write(String str) {
+    public static void writeSymbol(String str) {
         File outputFile = new File("parser.txt");
         FileWriter fw = null;
         try {
@@ -52,7 +51,7 @@ public class IOUtils {
         }
     }
 
-    public static void write(SymbolTable symbolTable) {
+    public static void writeSymbol(SymbolTable symbolTable) {
         File outputFile = new File("symbol.txt");
         FileWriter fw = null;
         try {
@@ -63,7 +62,7 @@ public class IOUtils {
             }
             fw.flush();
             for (SymbolTable childTable : symbolTable.getChildrenTables()) {
-                write(childTable);
+                writeSymbol(childTable);
             }
         } catch (IOException e) {
             e.printStackTrace();

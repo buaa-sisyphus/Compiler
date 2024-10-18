@@ -14,8 +14,8 @@ public class CharacterNode extends Node {
 
     @Override
     public void print() {
-        IOUtils.write(charConst.toString());
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(charConst.toString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public char getChar(){

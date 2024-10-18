@@ -160,89 +160,89 @@ public class StmtNode extends Node {
             case LVal:
                 // Stmt → LVal '=' Exp ';'
                 lValNode.print();
-                IOUtils.write(assignToken.toString());
+                IOUtils.writeSymbol(assignToken.toString());
                 expNode.print();
-                IOUtils.write(semicnToken.toString());
-                IOUtils.write(typeToString());
+                IOUtils.writeSymbol(semicnToken.toString());
+                IOUtils.writeSymbol(typeToString());
                 break;
             case Exp:
                 // Stmt → [Exp] ';'
                 if (expNode != null) {
                     expNode.print();
                 }
-                IOUtils.write(semicnToken.toString());
-                IOUtils.write(typeToString());
+                IOUtils.writeSymbol(semicnToken.toString());
+                IOUtils.writeSymbol(typeToString());
                 break;
             case If:
                 //Stmt → 'if' '(' Cond ')' Stmt [ 'else' Stmt ]
-                IOUtils.write(ifToken.toString());
-                IOUtils.write(lParenToken.toString());
+                IOUtils.writeSymbol(ifToken.toString());
+                IOUtils.writeSymbol(lParenToken.toString());
                 condNode.print();
-                IOUtils.write(rParenToken.toString());
+                IOUtils.writeSymbol(rParenToken.toString());
                 stmtNodes.get(0).print();
                 if (elseToken != null) {
-                    IOUtils.write(elseToken.toString());
+                    IOUtils.writeSymbol(elseToken.toString());
                     stmtNodes.get(1).print();
                 }
-                IOUtils.write(typeToString());
+                IOUtils.writeSymbol(typeToString());
                 break;
             case For:
                 //Stmt → 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
-                IOUtils.write(forToken.toString());
-                IOUtils.write(lParenToken.toString());
+                IOUtils.writeSymbol(forToken.toString());
+                IOUtils.writeSymbol(lParenToken.toString());
                 if (forStmtNodeFir != null) forStmtNodeFir.print();
-                IOUtils.write(semicnTokens.get(0).toString());
+                IOUtils.writeSymbol(semicnTokens.get(0).toString());
                 if (condNode != null) condNode.print();
-                IOUtils.write(semicnTokens.get(1).toString());
+                IOUtils.writeSymbol(semicnTokens.get(1).toString());
                 if (forStmtNodeSec != null) forStmtNodeSec.print();
-                IOUtils.write(rParenToken.toString());
+                IOUtils.writeSymbol(rParenToken.toString());
                 stmtNode.print();
-                IOUtils.write(typeToString());
+                IOUtils.writeSymbol(typeToString());
                 break;
             case Break:
             case Continue:
                 // Stmt → 'break' ';' | 'continue' ';'
-                IOUtils.write(breakToken.toString());
-                IOUtils.write(semicnToken.toString());
-                IOUtils.write(typeToString());
+                IOUtils.writeSymbol(breakToken.toString());
+                IOUtils.writeSymbol(semicnToken.toString());
+                IOUtils.writeSymbol(typeToString());
                 break;
             case Return:
                 // Stmt → 'return' [Exp] ';'
-                IOUtils.write(returnToken.toString());
+                IOUtils.writeSymbol(returnToken.toString());
                 if (expNode != null) expNode.print();
-                IOUtils.write(semicnToken.toString());
-                IOUtils.write(typeToString());
+                IOUtils.writeSymbol(semicnToken.toString());
+                IOUtils.writeSymbol(typeToString());
                 break;
             case Printf:
                 // Stmt → 'printf''('StringConst {','Exp}')'';'
-                IOUtils.write(printfToken.toString());
-                IOUtils.write(lParenToken.toString());
-                IOUtils.write(stringToken.toString());
+                IOUtils.writeSymbol(printfToken.toString());
+                IOUtils.writeSymbol(lParenToken.toString());
+                IOUtils.writeSymbol(stringToken.toString());
                 if (expNodes != null && !expNodes.isEmpty()) {
                     for (int i = 0; i < expNodes.size(); i++) {
-                        IOUtils.write(commaTokens.get(i).toString());
+                        IOUtils.writeSymbol(commaTokens.get(i).toString());
                         expNodes.get(i).print();
                     }
                 }
-                IOUtils.write(rParenToken.toString());
-                IOUtils.write(semicnToken.toString());
-                IOUtils.write(typeToString());
+                IOUtils.writeSymbol(rParenToken.toString());
+                IOUtils.writeSymbol(semicnToken.toString());
+                IOUtils.writeSymbol(typeToString());
                 break;
             case GetChar:
             case GetInt:
                 // Stmt → LVal '=' 'getint''('')'';' | LVal '=' 'getchar''('')'';'
                 lValNode.print();
-                IOUtils.write(assignToken.toString());
-                IOUtils.write(getToken.toString());
-                IOUtils.write(lParenToken.toString());
-                IOUtils.write(rParenToken.toString());
-                IOUtils.write(semicnToken.toString());
-                IOUtils.write(typeToString());
+                IOUtils.writeSymbol(assignToken.toString());
+                IOUtils.writeSymbol(getToken.toString());
+                IOUtils.writeSymbol(lParenToken.toString());
+                IOUtils.writeSymbol(rParenToken.toString());
+                IOUtils.writeSymbol(semicnToken.toString());
+                IOUtils.writeSymbol(typeToString());
                 break;
             case Block:
                 // Stmt → Block
                 blockNode.print();
-                IOUtils.write(typeToString());
+                IOUtils.writeSymbol(typeToString());
                 break;
             default:
                 System.out.println("StmtType Error");

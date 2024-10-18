@@ -37,9 +37,9 @@ public class PrimaryExpNode extends Node {
     @Override
     public void print() {
         if (expNode != null) {
-            IOUtils.write(lParent.toString());
+            IOUtils.writeSymbol(lParent.toString());
             expNode.print();
-            IOUtils.write(rParent.toString());
+            IOUtils.writeSymbol(rParent.toString());
         } else if (lValNode != null) {
             lValNode.print();
         } else if (numberNode != null) {
@@ -47,7 +47,7 @@ public class PrimaryExpNode extends Node {
         } else if (characterNode != null) {
             characterNode.print();
         }
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public String getType() {

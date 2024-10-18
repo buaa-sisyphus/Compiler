@@ -23,15 +23,15 @@ public class ConstDeclNode extends Node {
     }
 
     public void print() {
-        IOUtils.write(constToken.toString());
+        IOUtils.writeSymbol(constToken.toString());
         bTypeNode.print();
         constDefNodes.get(0).print();
         for (int i = 1; i < constDefNodes.size(); i++) {
-            IOUtils.write(commaTokens.get(i - 1).toString());
+            IOUtils.writeSymbol(commaTokens.get(i - 1).toString());
             constDefNodes.get(i).print();
         }
-        IOUtils.write(semicnToken.toString());
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(semicnToken.toString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public List<ConstDefNode> getConstDefNodes() {

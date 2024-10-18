@@ -21,12 +21,12 @@ public class MainFuncDefNode extends Node{
     }
 
     public void print(){
-        IOUtils.write(intToken.toString());
-        IOUtils.write(mainToken.toString());
-        IOUtils.write(lParent.toString());
-        IOUtils.write(rParent.toString());
+        IOUtils.writeSymbol(intToken.toString());
+        IOUtils.writeSymbol(mainToken.toString());
+        IOUtils.writeSymbol(lParent.toString());
+        IOUtils.writeSymbol(rParent.toString());
         block.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public BlockNode getBlock() {

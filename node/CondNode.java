@@ -14,7 +14,7 @@ public class CondNode extends Node {
     @Override
     public void print() {
         lOrExpNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public LOrExpNode getlOrExpNode() {

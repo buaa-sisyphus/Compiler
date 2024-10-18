@@ -24,14 +24,14 @@ public class FuncDefNode extends Node {
 
     public void print() {
         funcTypeNode.print();
-        IOUtils.write(ident.toString());
-        IOUtils.write(lParent.toString());
+        IOUtils.writeSymbol(ident.toString());
+        IOUtils.writeSymbol(lParent.toString());
         if (funcFParamsNode != null) {
             funcFParamsNode.print();
         }
-        IOUtils.write(rParent.toString());
+        IOUtils.writeSymbol(rParent.toString());
         blockNode.print();
-        IOUtils.write(typeToString());
+        IOUtils.writeSymbol(typeToString());
     }
 
     public Token getIdent() {
