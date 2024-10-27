@@ -4,7 +4,7 @@ import token.Token;
 
 import java.util.List;
 
-public class ArraySymbol extends Symbol {
+public class VarSymbol extends Symbol {
     private List<Object> values;
 
     public void set(Token token, int scopeNum, int type, int btype, int con) {

@@ -19,7 +19,7 @@ public class Compiler {
         parser.analyze();
         Builder builder = Builder.getInstance();
         builder.build(parser.getCompUnitNode());
-        if(handler.getErrors().isEmpty()) IOUtils.writeSymbol(builder.getRootTable());
+        if(handler.getErrors().isEmpty()) parser.print();
         else IOUtils.writeErrors(handler.getErrors());
     }
 }

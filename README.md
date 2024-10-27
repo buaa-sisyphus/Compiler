@@ -179,6 +179,7 @@ paeser.print();
 │  config.json
 │  error.txt
 │  parser.txt
+|  symbol.txt
 │  README.md
 │  testfile.txt
 │
@@ -188,6 +189,7 @@ paeser.print();
 │      ErrorType.java
 │
 ├─frontend
+|	   Buider.java
 │      Lexer.java
 │      Parser.java
 │
@@ -229,6 +231,13 @@ paeser.print();
 │      VarDeclNode.java
 │      VarDefNode.java
 │
+├───symbol
+│       FuncParam.java
+│       FuncSymbol.java
+│       Symbol.java
+│       SymbolTable.java
+│       VarSymbol.java
+|
 ├─token
 │      Token.java
 │      TokenType.java
@@ -448,7 +457,7 @@ public class ConstDeclNode extends Node {
 
 第二步，避免回溯。可以发现修改后的规则的右部的两个选择中有相交的First集，导致不能仅根据当前词法成分判断接下来的语法成分是什么，后续可能会造成回溯。可以将其修改为`MulExp → UnaryExp [('*' | '/' | '%') MulExp]`。
 
-因为修改了规则，所以生成的语法树会变化，`print()`函数的实现也跟其他的不一样：
+观察样例输出，应该是遵循最右规范推导，然后自底向上输出。因为修改了规则，所以生成的语法树会变化，`print()`函数的实现也跟其他的不一样：
 
 ```java
 @Override
@@ -551,6 +560,373 @@ private UnaryExpNode UnaryExp() {
 ```
 
 ## 6. 语义分析设计
+
+### 6.1. 符号管理设计
+
+首先定义符号抽象父类`Symbol`类：
+
+```java
+public abstract class Symbol {
+    protected String name;
+    protected int scopeNum;
+    protected int type;// 0 var 1 array 2 func
+    protected int btype; // 0 int 1 char 2 void
+    protected int con;//0 var 1 const
+    protected int lineNum;//标识符声明的位置
+
+    @Override
+    public String toString() {
+        return scopeNum + " " + name + " " + toType() + "\n";
+    }
+
+    public String toType() {
+        String str = "";
+        if (con == 1) str += "Const";
+
+        if (btype == 0) str += "Int";
+        else if (btype == 1) str += "Char";
+        else str += "Void";
+
+        if (type == 1) str += "Array";
+        else if (type == 2) str += "Func";
+
+        return str;
+    }
+	...
+}
+
+```
+
+* `scopeNum`是符号所处在的作用域的号数
+* `lineNum`是符号被声明时处于的行号
+* `type`是这个符号的类型，0表示普通变量，1表示数组变量，2表示函数
+* `btype`是这个符号的二进制类型（函数的返回值类型），0表示`int`，1表示`char`，2表示`void`
+* `con`表示这个符号是不是常量
+* `toType()`是将符号类型转化为字符串，方便输出。后续判断类型的时候可以让代码可读性更高。比如`symbol.toType().contains("Array")`而不是`symbol.type==1`，后者看起来不是很方便，有时候会让我混乱
+
+接着定义`VarSymbol`和`FuncSymbol`。前者表示普通变量和数组变量，后者表示函数：
+
+```java
+public class VarSymbol extends Symbol {
+    private List<Object> values;
+	... 
+}
+
+public class FuncSymbol extends Symbol {
+    private List<FuncParam> params = new ArrayList<>();
+
+    public void addParam(FuncParam param) {
+        params.add(param);
+    }
+    ...
+}
+
+public class FuncParam {
+    private String funcName;
+    private int btype;//0 int 1 char
+    private int type;//0 var 1 array
+
+    public String toType() {
+        String str = "";
+        if (btype == 0) str += "Int";
+        else str += "Char";
+        if (type == 1) str += "Array";
+        return str+"\n";
+    }
+}
+
+```
+
+* `values`是用来记录值的，但是目前还没使用
+* `params`是用来记录函数形参的
+
+符号表类`SymbolTable`定义：
+
+```java
+public class SymbolTable {
+    private Map<String, Symbol> symbolTable = new LinkedHashMap<>();
+    private List<SymbolTable> childrenTables = new ArrayList<>();
+    private SymbolTable parentTable;
+    private int scopeNum;
+    private boolean needReturn = false;
+    private boolean isFunc = false;
+
+    public void setParentTable(SymbolTable parentTable) {
+        this.parentTable = parentTable;
+    }
+
+    public void addSymbol(String ident, Symbol symbol) {
+        symbolTable.put(ident, symbol);
+    }
+
+    public void addChild(SymbolTable child) {
+        childrenTables.add(child);
+    }
+
+    public Symbol getSymbol(String ident) {
+        return symbolTable.get(ident);
+    }
+
+    public Symbol getSymbolDeep(String ident) {
+        Symbol symbol = null;
+        for (SymbolTable table = this; table != null; table = table.parentTable) {
+            symbol = table.getSymbol(ident);
+            if (symbol != null) {
+                return symbol;
+            }
+        }
+        return symbol;
+    }
+
+   ...
+}
+
+```
+
+我使用的是树状符号表。一个符号表实例可以看作一个作用域。
+
+* `symbolTable`：记录符号的Map，符号名为键，符号为值。因为输出要按照声明顺序，所以实际为`LinkedHashMap`
+* `childrenTables`：子作用域的符号表集合
+* `parentTable`：父作用域的符号表
+* `scopeNum`：作用域号数，相当于`id`
+* `isFunc`：用来记录这个符号表（作用域）是不是属于函数的。实际编码的时候发现需要加上这个属性，在后期错误处理需要用到
+* `needReturn`：如果这个符号表（作用域）是属于函数的，还需要记录这个函数是否需要返回值。实际编码的时候发现需要加上这个属性，在后期错误处理需要用到
+* `getSymbol`：就是在本层作用域（本符号表）中寻找符号
+* `getSymbolDepp`：就是在本层以及父层、父层的父层等等寻找符号
+
+### 6.2. 符号管理实现
+
+符号表的建立在`/frontend/Buider.java`中
+
+```java
+public class Builder {
+    private static final Builder instance = new Builder();
+    public static int scope = 0;
+    public static int loop = 0;//记录循环
+    private SymbolTable root;
+    private SymbolTable cur;
+	
+    
+    public void build(CompUnitNode compUnitNode) {
+        CompUnit(compUnitNode);
+    }
+
+    private void pushTable(boolean needReturn, boolean isFunc) {
+        scope++;
+        SymbolTable newTable = new SymbolTable();
+        newTable.setScopeNum(scope);
+        newTable.setParentTable(cur);
+        newTable.setFunc(isFunc);
+        newTable.setNeedReturn(needReturn);
+        cur.addChild(newTable);
+        cur = newTable;
+    }
+
+    private void popTable() {
+        cur = cur.getParentTable();
+    }
+
+    private void initTable() {
+        loop = 0;
+        scope = 1;
+        root = new SymbolTable();
+        root.setScopeNum(scope);
+        root.setNeedReturn(false);
+        root.setFunc(false);
+        cur = root;
+    }
+    ...
+}
+```
+
+* `loop`：记录循环。当`loop`为0时，表示当前不处于循环体
+* `root`：树状符号表的根节点
+* `cur`：当前在使用的符号表
+* `pushTable`：在将进入新作用域前调用，创建一个新的符号表，初始化新符号表的一些属性
+* `popTable`：在从作用域退出后调用，表示返回父作用域
+
+符号表的建立，思路就是遍历语法分析中生成的语法树，主要是处理声明语句，将声明的变量加入符号表（先暂时不处理值），将声明的函数加入符号表，将函数的形参加入符号表（不要漏了将形参加入`funcSymbol`的`params`中）。
+
+### 6.3. 错误处理
+
+错误处理才是这次作业比较麻烦的地方，非常容易遗漏。
+
+**`b`、`c`类：**
+
+使用在`SymbolTable`中定义的`getSymbol`和`getSymbolDeep`两个方法去解决。只需要注意在寻找`b`类错误的时候只在本层找，`c`类错误在本层以及所有祖先层找。
+
+**`d`、`e`类：**
+
+`d`类简单，就拿`FuncRParamsNode`的`expNodes`集合大小与这个函数的`params`集合大小比较就行。需要注意的是当`FuncRParams`为空的情况。
+
+`e`类只需要判断四种情况，变量传数组、数组传变量、int数组传char数组、char数组传int数组，使用下面函数处理：
+
+```java
+private boolean matchParams(List<FuncParam> params, List<ExpNode> expNodes, SymbolTable table) {
+    for (int i = 0; i < params.size(); i++) {
+        String paramType = params.get(i).toType();
+        ExpNode expNode = expNodes.get(i);
+        String tmp = expNode.getType();
+        if (tmp.equals("0")) {
+            //非数组
+            if (paramType.contains("Array")) {
+                return false;
+            }
+        } else {
+            String symbolType = table.getSymbolDeep(tmp).toType();
+            if (symbolType.contains("Array") && paramType.contains("Array")) {
+                if ((symbolType.contains("Int") && paramType.contains("Char")) ||
+                        (symbolType.contains("Char") && paramType.contains("Int"))) {
+                    return false;
+                }
+            } else if ((symbolType.contains("Array") && !paramType.contains("Array"))
+                    || (!symbolType.contains("Array") && paramType.contains("Array"))) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+```
+
+`expNode.getType()`需要解释一下：就是不停地往“深”处调用`getType()`。
+
+对于`MulExp`、`AddExp → MulExp | AddExp ('+' | '−') MulExp`等，只需要判断`op`存不存在。如果存在，说明这个式子肯定是一个非数组型的（题目保证过不使用数组地址做加减乘除括号等运算），返回一个字符串“0”。反之就继续向深处调用`getType()`。
+
+对于`UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp'`，第三种选择刚刚讲过，只会是非数组型，第二个选择因为函数会返回`int`或`char`，也是非数组型，因此也返回字符串“0”。第一种选择就继续调用它的`getType()`。
+
+对于`PrimaryExp → '(' Exp ')' | LVal | Number | Character`，第一种刚刚讲过。第三四种肯定也是非数组了。第二种还要继续往深处调用。
+
+对于`LVal → Ident ['[' Exp ']']`，如果有左括号，那包是非数组型的。如果没有，这时候我们拿不到这个符号是什么，所以我们直接返回这个符号名，在最开始的调用处用符号表搜索这个符号，再进一步判断。
+
+下面给出一部分代码：
+
+```java
+//UnaryExpNode.java
+//UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp'
+public String getType() {
+    if (primaryExpNode != null) {
+        return primaryExpNode.getType();
+    } else {
+        return "0";
+    }
+}
+```
+
+**`f`类：**
+
+`f`类的话需要注意下面这种情况，`return`所在的直接作用域并不是函数的那个作用域：
+
+```c
+void a(){
+    if(1==1){
+        return 1;
+    }
+}
+```
+
+`return`语句在的直接作用域是这个`if`语句作用域，我们需要找到外层的这个`a`，判断它需不需要返回值。
+
+```java
+case Return:
+    // Stmt → 'return' [Exp] ';'
+    ExpNode expNode = stmtNode.getExpNode();
+    SymbolTable tmp = null;
+    boolean flag = false;
+    if (expNode != null) {
+        //有返回值
+        for (tmp = cur; tmp != null; tmp = tmp.getParentTable()) {
+            //一直往上找，找到所属的函数
+            if (tmp.isFunc()) {
+                if (!tmp.getNeedReturn()) flag = true;
+                break;
+            }
+        }
+        if (flag) {
+            ErrorHandler.getInstance().addError(ErrorType.f, stmtNode.getReturnToken().getLineNum());
+        }
+        Exp(stmtNode.getExpNode());
+    }
+	break;
+```
+
+**`g`类：**
+
+因为题目保证了只需要找函数末尾有没有`return`，所以我们在`block(BlockNode blockNode)`中取最后一个`blockItem`来判断即可，注意当`blockItem`数量为0时的情况。
+
+```java
+ private void Block(BlockNode blockNode) {
+    // Block → '{' { BlockItem } '}'
+    ...
+    if (cur.isFunc() && cur.getNeedReturn()) {
+        if (blockItemNodes.isEmpty()) {
+            ErrorHandler.getInstance().addError(ErrorType.g, blockNode.getrBraceToken().getLineNum());
+            return;
+        }
+        BlockItemNode last = blockItemNodes.get(blockItemNodes.size() - 1);
+        if (last.getDeclNode() != null) {
+            ErrorHandler.getInstance().addError(ErrorType.g, blockNode.getrBraceToken().getLineNum());
+            return;
+        }
+        if (last.getStmtNode().getStmtType() != StmtNode.StmtType.Return) {
+            ErrorHandler.getInstance().addError(ErrorType.g, blockNode.getrBraceToken().getLineNum());
+            return;
+        }
+    }
+}
+```
+
+**`h`类：**
+
+当常量被**赋值**时，才需要报错。所以需要传入一个`isAssign`，如果有`=`进行赋值的，`isAssign`就为真，比如`Stmt → LVal '=' 'getint''('')'';'`。
+
+```java
+private void LVal(LValNode lValNode, boolean isAssign) {
+    // LVal → Ident ['[' Exp ']']
+    Token ident = lValNode.getIdent();
+    Symbol symbol = cur.getSymbolDeep(ident.getContent());
+    if (symbol == null) {
+        ErrorHandler.getInstance().addError(ErrorType.c, ident.getLineNum());
+        return;
+    } else if (symbol.getCon() == 1 && isAssign) {
+        ErrorHandler.getInstance().addError(ErrorType.h, ident.getLineNum());
+        return;
+    }
+    if (lValNode.getExpNode() != null) {
+        Exp(lValNode.getExpNode());
+    }
+}
+```
+
+**`I`类：**
+
+就计算字符串中的`%d`和`%c`个数，与表达式个数比较一下就行。
+
+**`m`类：**
+
+全局维护一个 `loop`，初始为 0，每次进入循环就加一，退出循环就减一。在`break`或`continue`时判断一下`loop`是不是0就好了。
+
+```java
+case For:
+    //Stmt → 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
+    ...
+    loop++;
+    Stmt(stmtNode.getStmtNode());
+    loop--;
+    break;
+```
+
+```java
+case Break:
+case Continue:
+    // Stmt → 'break' ';' | 'continue' ';'
+    if (loop <= 0) {
+        ErrorHandler.getInstance().addError(ErrorType.m, stmtNode.getBreakToken().getLineNum());
+    }
+    break;
+```
+
+
 
 ## 7. 代码生成设计
 

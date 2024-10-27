@@ -33,10 +33,6 @@ public class SymbolTable {
         return isFunc;
     }
 
-    public boolean findSymbol(String ident) {
-        return symbolTable.containsKey(ident);
-    }
-
     public Symbol getSymbol(String ident) {
         return symbolTable.get(ident);
     }

@@ -25,8 +25,7 @@ public class FuncParam {
         return funcName;
     }
 
-    @Override
-    public String toString() {
+    public String toType() {
         String str = "";
         if (btype == 0) str += "Int";
         else str += "Char";

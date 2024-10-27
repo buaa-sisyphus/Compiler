@@ -58,6 +58,32 @@ public class Builder {
         cur = root;
     }
 
+    private boolean matchParams(List<FuncParam> params, List<ExpNode> expNodes, SymbolTable table) {
+        for (int i = 0; i < params.size(); i++) {
+            String paramType = params.get(i).toType();
+            ExpNode expNode = expNodes.get(i);
+            String tmp = expNode.getType();
+            if (tmp.equals("0")) {
+                //立即数
+                if (paramType.contains("Array")) {
+                    return false;
+                }
+            } else {
+                String symbolType = table.getSymbolDeep(tmp).toType();
+                if (symbolType.contains("Array") && paramType.contains("Array")) {
+                    if ((symbolType.contains("Int") && paramType.contains("Char")) ||
+                            (symbolType.contains("Char") && paramType.contains("Int"))) {
+                        return false;
+                    }
+                } else if ((symbolType.contains("Array") && !paramType.contains("Array"))
+                        || (!symbolType.contains("Array") && paramType.contains("Array"))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private void Block(BlockNode blockNode) {
         // Block → '{' { BlockItem } '}'
         List<BlockItemNode> blockItemNodes = blockNode.getBlockItemNodes();
@@ -264,15 +290,15 @@ public class Builder {
             ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
             return;
         }
-        ArraySymbol arraySymbol = new ArraySymbol();
+        VarSymbol varSymbol = new VarSymbol();
         int type = 0;
         if (constDefNode.getConstExpNode() != null) {
             type = 1;
             ConstExp(constDefNode.getConstExpNode());
         }
         ConstInitVal(constDefNode.getConstInitValNode());
-        arraySymbol.set(ident, cur.getScopeNum(), type, btype, con);
-        cur.addSymbol(ident.getContent(), arraySymbol);
+        varSymbol.set(ident, cur.getScopeNum(), type, btype, con);
+        cur.addSymbol(ident.getContent(), varSymbol);
     }
 
     private void ConstInitVal(ConstInitValNode constInitValNode) {
@@ -327,11 +353,12 @@ public class Builder {
                 FuncRParamsNode funcRParamsNode = unaryExpNode.getFuncRParamsNode();
                 List<FuncParam> params = funcSymbol.getParams();
                 if (funcRParamsNode != null) {
-                    if (!funcRParamsNode.matchParamsCount(give)) {
+                    List<ExpNode> expNodes = funcRParamsNode.getExpNodes();
+                    if (give != expNodes.size()) {
                         // 数量不匹配
                         ErrorHandler.getInstance().addError(ErrorType.d, ident.getLineNum());
                         return;
-                    } else if (!funcRParamsNode.matchParams(params, cur)) {
+                    } else if (!matchParams(params, expNodes, cur)) {
                         // 类型不匹配
                         ErrorHandler.getInstance().addError(ErrorType.e, ident.getLineNum());
                         return;
@@ -415,10 +442,10 @@ public class Builder {
             ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
             return;
         }
-        ArraySymbol arraySymbol = new ArraySymbol();
-        arraySymbol.set(ident, cur.getScopeNum(), type, btype, 0);
-        if (funcSymbol != null) funcSymbol.addParam(new FuncParam(arraySymbol.getName(), btype, type));
-        cur.addSymbol(ident.getContent(), arraySymbol);
+        VarSymbol varSymbol = new VarSymbol();
+        varSymbol.set(ident, cur.getScopeNum(), type, btype, 0);
+        if (funcSymbol != null) funcSymbol.addParam(new FuncParam(varSymbol.getName(), btype, type));
+        cur.addSymbol(ident.getContent(), varSymbol);
     }
 
     private void FuncRParams(FuncRParamsNode funcRParamsNode) {
@@ -512,14 +539,14 @@ public class Builder {
             ErrorHandler.getInstance().addError(ErrorType.b, ident.getLineNum());
             return;
         }
-        ArraySymbol arraySymbol = new ArraySymbol();
+        VarSymbol varSymbol = new VarSymbol();
         int type = 0;
         if (varDefNode.getConstExpNode() != null) {
             type = 1;
             ConstExp(varDefNode.getConstExpNode());
         }
-        arraySymbol.set(ident, cur.getScopeNum(), type, btype, con);
-        cur.addSymbol(ident.getContent(), arraySymbol);
+        varSymbol.set(ident, cur.getScopeNum(), type, btype, con);
+        cur.addSymbol(ident.getContent(), varSymbol);
         if (varDefNode.getInitValNode() != null) {
             InitVal(varDefNode.getInitValNode());
         }
