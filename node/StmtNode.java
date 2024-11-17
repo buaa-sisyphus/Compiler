@@ -294,6 +294,10 @@ public class StmtNode extends Node {
         return stringToken;
     }
 
+    public String getStringContent(){
+        return stringToken.getContent().replace("\"","");
+    }
+
     public Token getElseToken() {
         return elseToken;
     }

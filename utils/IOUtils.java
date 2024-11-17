@@ -68,4 +68,16 @@ public class IOUtils {
             e.printStackTrace();
         }
     }
+
+    public static void writeLLVM(String content) {
+        File outputFile = new File("llvm_ir.txt");
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(outputFile, true);
+            fw.write(content);
+            fw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package node;
 
 import token.Token;
+import token.TokenType;
 import utils.IOUtils;
 
 // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp
@@ -76,6 +77,10 @@ public class UnaryExpNode extends Node {
 
     public UnaryOpNode getUnaryOpNode() {
         return unaryOpNode;
+    }
+
+    public TokenType getUnaryOpType(){
+        return unaryOpNode.getOp().getType();
     }
 
 }

@@ -10,18 +10,18 @@ import utils.CalUtils;
 
 import java.util.List;
 
-public class Builder {
-    private static final Builder instance = new Builder();
+public class Visitor {
+    private static final Visitor instance = new Visitor();
     public static int scope = 0;
     public static int loop = 0;//记录循环
     private SymbolTable root;
     private SymbolTable cur;
 
-    private Builder() {
+    private Visitor() {
 
     }
 
-    public static Builder getInstance() {
+    public static Visitor getInstance() {
         return instance;
     }
 

@@ -1,6 +1,7 @@
 package node;
 
 import token.Token;
+import token.TokenType;
 import utils.IOUtils;
 
 /* AddExp → MulExp | AddExp ('+' | '−') MulExp
@@ -34,6 +35,12 @@ public class AddExpNode extends Node {
         } else {
             return mulExpNode.getType();
         }
+    }
+
+    public TokenType getOpType() {
+        if (op != null) {
+            return op.getType();
+        }else return null;
     }
 
     public AddExpNode getAddExpNode() {

@@ -1,7 +1,9 @@
 import error.ErrorHandler;
-import frontend.Builder;
+import frontend.Visitor;
 import frontend.Lexer;
 import frontend.Parser;
+import llvm.IRGenerator;
+import llvm.IRModule;
 import utils.IOUtils;
 
 import java.io.IOException;
@@ -12,14 +14,19 @@ public class Compiler {
         IOUtils.empty("lexer.txt");
         IOUtils.empty("error.txt");
         IOUtils.empty("symbol.txt");
+        IOUtils.empty("llvm_ir.txt");
         ErrorHandler handler = ErrorHandler.getInstance();
         Lexer lexer = Lexer.getLexer();
         lexer.analyze();
         Parser parser = new Parser(lexer.getTokens());
         parser.analyze();
-        Builder builder = Builder.getInstance();
-        builder.build(parser.getCompUnitNode());
-        if(handler.getErrors().isEmpty()) parser.print();
-        else IOUtils.writeErrors(handler.getErrors());
+        Visitor visitor = Visitor.getInstance();
+        visitor.build(parser.getCompUnitNode());
+        if (handler.getErrors().isEmpty()) {
+            IRGenerator irGenerator = IRGenerator.getInstance();
+            irGenerator.CompUnit(parser.getCompUnitNode());
+            IRModule irModule = IRModule.getInstance();
+            IOUtils.writeLLVM(irModule.toString());
+        } else IOUtils.writeErrors(handler.getErrors());
     }
 }

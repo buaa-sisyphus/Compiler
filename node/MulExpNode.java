@@ -1,6 +1,7 @@
 package node;
 
 import token.Token;
+import token.TokenType;
 import utils.IOUtils;
 
 /* MulExp → UnaryExp | MulExp ('*' | '/' | '%') UnaryExp
@@ -35,6 +36,12 @@ public class MulExpNode extends Node {
         } else {
             return unaryExpNode.getType();
         }
+    }
+
+    public TokenType getOpType() {
+        if (op != null) {
+            return op.getType();
+        }else return null;
     }
 
     public MulExpNode getMulExpNode() {
