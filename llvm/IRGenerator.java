@@ -1,9 +1,6 @@
 package llvm;
 
-import llvm.types.FunctionType;
-import llvm.types.IntegerType;
-import llvm.types.Type;
-import llvm.types.VoidType;
+import llvm.types.*;
 import llvm.values.*;
 import llvm.values.instructions.Operator;
 import node.*;
@@ -63,6 +60,35 @@ public class IRGenerator {
 
     private void addGlobalValue(String name, Value value) {
         root.addValue(name, value);
+    }
+
+    private boolean isHaveGlobalStr(String str) {
+        for (Value value : root.getValueTable().values()) {
+            if (value instanceof ConstString) {
+                if (((ConstString) value).getValue().equals(str)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void callPutStr(StringBuilder str) {
+        List<Value> args = new ArrayList<>();
+        String value = str.toString();
+        ConstString tmpString;
+        if (isHaveGlobalStr(value)) {
+            tmpString = new ConstString(value);
+        } else {
+            tmpString = buildFactory.getConstString(value);
+            root.addValue("0_str_+" + value, tmpString);//数字在前保证不会和标识符冲突
+        }
+        ArrayType arrayType = new ArrayType(IntegerType.i8, tmpString.getLength());
+        Value array = buildFactory.buildGlobalArray(tmpString.getName(), arrayType, true, true);
+        buildFactory.buildInitArray(array, tmpString);
+        args.add(buildFactory.buildGEP(curBlock, array, 0));
+
+        buildFactory.buildCall(curBlock, (Function) root.getValueDeep("putstr"), args);
     }
 
     public void CompUnit(CompUnitNode compUnitNode) {
@@ -252,24 +278,38 @@ public class IRGenerator {
                     Exp(expNode);
                     exps.add(tmpValue);
                 }
+                StringBuilder str = new StringBuilder();
                 for (int i = 0; i < stringConst.length(); i++) {
-                    if (stringConst.charAt(i) == '%' && stringConst.charAt(i + 1) == 'd') {
+                    if (i <= stringConst.length() - 2 && stringConst.charAt(i) == '%' && stringConst.charAt(i + 1) == 'd') {
+                        if (!str.isEmpty()) {
+                            //如果现在是%d,那么将之前的字符串保存，并且调用putstr
+                            callPutStr(str);
+                            str.setLength(0);
+                        }
                         List<Value> args = new ArrayList<>();
                         args.add(exps.get(0));
                         exps.remove(0);
-                        buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("putint"), args);
+                        buildFactory.buildCall(curBlock, (Function) root.getValueDeep("putint"), args);
                         i++;
-                    } else if (stringConst.charAt(i) == '%' && stringConst.charAt(i + 1) == 'c') {
+                    } else if (i <= stringConst.length() - 2 && stringConst.charAt(i) == '%' && stringConst.charAt(i + 1) == 'c') {
+                        if (!str.isEmpty()) {
+                            //如果现在是%c,那么将之前的字符串保存，并且调用putstr
+                            callPutStr(str);
+                            str.setLength(0);
+                        }
                         List<Value> args = new ArrayList<>();
                         args.add(exps.get(0));
                         exps.remove(0);
-                        buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("putchar"), args);
+                        buildFactory.buildCall(curBlock, (Function) root.getValueDeep("putchar"), args);
                         i++;
                     } else {
-                        List<Value> args = new ArrayList<>();
-                        args.add(buildFactory.getConstChar(stringConst.charAt(i)));
-                        buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("putchar"), args);
+                        str.append(stringConst.charAt(i));
                     }
+                }
+                if (!str.isEmpty()) {
+                    //将最后一个%d或%c后面的字符串保存，并且调用putstr
+                    callPutStr(str);
+                    str.setLength(0);
                 }
                 break;
             case GetChar:
@@ -422,7 +462,7 @@ public class IRGenerator {
             tmpType = buildFactory.getArrayType(tmpType, saveValue);
             isConst = false;
             if (isGlobal) {
-                tmpValue = buildFactory.buildGlobalArray(name, tmpType, false);
+                tmpValue = buildFactory.buildGlobalArray(name, tmpType, false, false);
                 if (varDefNode.getInitValNode() != null) {
                     //??
                     ((ConstArray) ((GlobalVar) tmpValue).getValue()).setInit(true);
@@ -460,7 +500,7 @@ public class IRGenerator {
                 } else {
                     value = buildFactory.getConstChar(saveValue == null ? 0 : saveValue);
                 }
-                tmpValue = buildFactory.buildGlobalVar(name, tmpType, false, value);
+                tmpValue = buildFactory.buildGlobalVar(name, tmpType, value, false, false);
                 cur.addValue(name, tmpValue);
             } else {
                 tmpValue = buildFactory.buildVar(curBlock, tmpValue, false, tmpType);
@@ -474,8 +514,8 @@ public class IRGenerator {
         if (initValNode.getExpNode() != null) {
             Exp(initValNode.getExpNode());
         } else if (initValNode.getStringConst() != null) {
-            //去除原来保存的双引号
-            String str = initValNode.getStringConst().getContent().replace("\"", "");
+            //去除原来保存的双引号，给末尾加上\0
+            String str = initValNode.getStringContent() + "\0";
             char[] chars = str.toCharArray();
             for (int i = 0; i < chars.length; i++) {
                 tmpValue = buildFactory.getConstChar(chars[i]);
@@ -493,7 +533,11 @@ public class IRGenerator {
                 saveValue = null;
                 Exp(expNode);
                 if (isGlobal) {
-                    tmpValue = buildFactory.getConstInt(saveValue);
+                    if (tmpType == IntegerType.i32) {
+                        tmpValue = buildFactory.getConstInt(saveValue);
+                    } else {
+                        tmpValue = buildFactory.getConstChar(saveValue);
+                    }
                     buildFactory.buildInitArray(curArray, tmpOffset, tmpValue);
                 } else {
                     //计算数组元素地址，保存值
@@ -532,7 +576,7 @@ public class IRGenerator {
             cur.addConstValue(name, saveValue);
             if (isGlobal) {
                 //包装成globalVar，加入表
-                tmpValue = buildFactory.buildGlobalVar(name, tmpType, true, tmpValue);
+                tmpValue = buildFactory.buildGlobalVar(name, tmpType, tmpValue, true, false);
                 cur.addValue(name, tmpValue);
             } else {
                 tmpValue = buildFactory.buildVar(curBlock, tmpValue, true, tmpType);
@@ -543,7 +587,7 @@ public class IRGenerator {
             ConstExp(constDefNode.getConstExpNode());//给saveValue赋值
             Type type = buildFactory.getArrayType(tmpType, saveValue);
             if (isGlobal) {
-                tmpValue = buildFactory.buildGlobalArray(name, type, true);
+                tmpValue = buildFactory.buildGlobalArray(name, type, true, false);
                 ((ConstArray) ((GlobalVar) tmpValue).getValue()).setInit(true);
             } else {
                 tmpValue = buildFactory.buildArray(curBlock, true, type);

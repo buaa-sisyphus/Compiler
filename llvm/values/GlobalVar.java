@@ -4,14 +4,16 @@ import llvm.IRModule;
 import llvm.types.PointerType;
 import llvm.types.Type;
 
-public class GlobalVar extends User{
+public class GlobalVar extends User {
     private boolean isConst; // 是否是常量
+    private boolean isString;
     private Value value;
 
-    public GlobalVar(String name, Type type, boolean isConst, Value value) {
+    public GlobalVar(String name, Type type, Value value, boolean isConst, boolean isString) {
         super("@" + name, new PointerType(type));
         this.isConst = isConst;
         this.value = value;
+        this.isString = isString;
     }
 
     public boolean isConst() {
@@ -46,7 +48,9 @@ public class GlobalVar extends User{
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.getName()).append(" = ");
-        if (isConst) {
+        if (isString) {
+            sb.append("private unnamed_addr constant ");
+        } else if (isConst) {
             sb.append("constant ");
         } else {
             sb.append("global ");

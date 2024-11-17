@@ -60,6 +60,10 @@ public class InitValNode extends Node {
         return stringConst;
     }
 
+    public String getStringContent(){
+        return stringConst.getContent().replace("\"","");
+    }
+
     public List<ExpNode> getExpNodes() {
         return expNodes;
     }

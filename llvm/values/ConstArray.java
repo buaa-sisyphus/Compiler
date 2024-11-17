@@ -12,6 +12,7 @@ public class ConstArray extends Const {
     private List<Value> array;
     private int capacity;
     private boolean init = false;
+    private boolean isString = false;
 
     public ConstArray(Type type, Type elementType, int capacity) {
         super("", type);
@@ -65,17 +66,28 @@ public class ConstArray extends Const {
         array.set(offset, value);
     }
 
+    public void storeValue(Value string) {
+        array.set(0, string);
+        isString = true;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(this.getType().toString()).append(" ").append("[");
-        for (int i = 0; i < array.size(); i++) {
-            if (i != 0) {
-                sb.append(", ");
+        if (isString) {
+            //是一个字符串
+            sb.append(((ConstString)array.get(0)).toString());
+        } else {
+            //是一个字符数组或者数字数组
+            sb.append(this.getType().toString()).append(" ").append("[");
+            for (int i = 0; i < array.size(); i++) {
+                if (i != 0) {
+                    sb.append(", ");
+                }
+                sb.append(array.get(i).toString());
             }
-            sb.append(array.get(i).toString());
+            sb.append("]");
         }
-        sb.append("]");
         return sb.toString();
     }
 }

@@ -44,6 +44,10 @@ public class ValueTable {
         return value;
     }
 
+    public HashMap<String, Value> getValueTable() {
+        return valueTable;
+    }
+
     public Integer getConst(String name) {
         return constTable.get(name);
     }

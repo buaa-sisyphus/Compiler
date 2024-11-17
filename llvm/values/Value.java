@@ -12,6 +12,7 @@ public class Value {
     private Type type;
     private List<Use> usesList; // 使用了这个 Value 的 User 列表，这对应着 def-use 关系
     public static int REG_NUMBER = 0; // LLVM 中的寄存器编号
+    public static int STR_NUMBER = 0;
     private final String id; // LLVM 中的 Value 的唯一编号
 
     public Value(String name, Type type) {

@@ -98,8 +98,8 @@ public class BuildFactory {
     /**
      * Var
      */
-    public GlobalVar buildGlobalVar(String name, Type type, boolean isConst, Value value) {
-        GlobalVar var = new GlobalVar(name, type, isConst, value);
+    public GlobalVar buildGlobalVar(String name, Type type, Value value,boolean isConst, boolean isString) {
+        GlobalVar var = new GlobalVar(name, type, value,isConst, isString);
         IRModule.getInstance().addGlobalVar(var);
         return var;
     }
@@ -114,7 +114,7 @@ public class BuildFactory {
                 //如果分配的类型和值的类型不一样，要进行位操作
                 if (allocaType == IntegerType.i32) {
                     value = buildZext(basicBlock, value);
-                }else{
+                } else {
                     value = buildTrunc(basicBlock, value);
                 }
             }
@@ -138,10 +138,9 @@ public class BuildFactory {
     /**
      * Array
      */
-    public GlobalVar buildGlobalArray(String name, Type type, boolean isConst) {
-        //全局数组肯定是常量数组
+    public GlobalVar buildGlobalArray(String name, Type type, boolean isConst,boolean isString) {
         Value constArray = new ConstArray(type, ((ArrayType) type).getElementType(), ((ArrayType) type).getCapacity());
-        GlobalVar var = new GlobalVar(name, type, isConst, constArray);
+        GlobalVar var = new GlobalVar(name, type, constArray,isConst, isString);
         IRModule.getInstance().addGlobalVar(var);
         return var;
     }
@@ -154,6 +153,10 @@ public class BuildFactory {
 
     public void buildInitArray(Value array, int index, Value value) {
         ((ConstArray) ((GlobalVar) array).getValue()).storeValue(index, value);
+    }
+
+    public void buildInitArray(Value array, Value value) {
+        ((ConstArray) ((GlobalVar) array).getValue()).storeValue(value);
     }
 
     public ArrayType getArrayType(Type elementType, int length) {

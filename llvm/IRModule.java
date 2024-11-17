@@ -1,6 +1,7 @@
 package llvm;
 
 import llvm.values.BasicBlock;
+import llvm.values.ConstString;
 import llvm.values.Function;
 import llvm.values.GlobalVar;
 import llvm.values.instructions.Instruction;
@@ -44,14 +45,14 @@ public class IRModule {
         }
 
         //先打印输入和输出函数
-        int i=0;
+        int i = 0;
         for (i = 0; i < 5; i++) {
             Function function = functions.get(i);
             s.append("declare ").append(function.toString()).append("\n");
         }
         s.append("\n");
 
-        for (i=5; i < functions.size(); i++) {
+        for (i = 5; i < functions.size(); i++) {
             Function function = functions.get(i);
             s.append("define dso_local ").append(function.toString()).append("{\n");
             for (BasicBlock basicBlock : function.getBlocks()) {
