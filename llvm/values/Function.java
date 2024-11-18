@@ -1,7 +1,5 @@
 package llvm.values;
 
-import llvm.IRModule;
-import llvm.types.ArrayType;
 import llvm.types.FunctionType;
 import llvm.types.Type;
 
@@ -15,7 +13,9 @@ public class Function extends Value {
 
     public Function(String name, Type type, boolean isLibraryFunction) {
         super(name, type);
+        //重置REG_NUMBER和LABEL_NUMBER
         REG_NUMBER = 0;
+        LABEL_NUMBER=0;
         this.isLibraryFunction = isLibraryFunction;
     }
 

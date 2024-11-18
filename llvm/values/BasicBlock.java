@@ -2,7 +2,9 @@ package llvm.values;
 
 import llvm.types.LabelType;
 import llvm.types.Type;
+import llvm.values.instructions.BrInst;
 import llvm.values.instructions.Instruction;
+import llvm.values.instructions.RetInst;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +16,18 @@ public class BasicBlock extends Value {
     private List<BasicBlock> sucBlocks = new ArrayList<>();//后继
 
     public BasicBlock(Function function) {
-        super(String.valueOf(REG_NUMBER++), new LabelType());
+        super(String.valueOf("label_" + LABEL_NUMBER++), new LabelType());
         this.belongFunc = function;
     }
 
     public void addInstruction(Instruction instruction) {
-        instructions.add(instruction);
+        if (!hasEnd()) instructions.add(instruction);
+    }
+
+    public boolean hasEnd() {
+        int size = instructions.size();
+        //如果基本块的最后一句是br或者ret，返回true
+        return !instructions.isEmpty() && (instructions.get(size - 1) instanceof BrInst || instructions.get(size - 1) instanceof RetInst);
     }
 
     public void addPreBlock(BasicBlock bb) {

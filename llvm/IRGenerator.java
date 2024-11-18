@@ -7,7 +7,6 @@ import node.*;
 import token.TokenType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class IRGenerator {
@@ -236,12 +235,79 @@ public class IRGenerator {
 
                     curBlock = finalBlock;
                 } else {
+                    //进入if前的基本快
+                    BasicBlock basicBlock = curBlock;
 
+                    BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
+                    curBlock = trueBlock;
+                    Stmt(stmtNode.getStmtNodes().get(0));
+
+                    BasicBlock falseBlock = buildFactory.buildBasicBlock(curFunction);
+                    curBlock = falseBlock;
+                    Stmt(stmtNode.getStmtNodes().get(1));
+
+                    curBlock = basicBlock;
+                    curTrueBlock = trueBlock;
+                    curFalseBlock = falseBlock;
+                    Cond(stmtNode.getCondNode());
+
+                    BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
+                    buildFactory.buildBr(trueBlock, finalBlock);
+                    buildFactory.buildBr(falseBlock, finalBlock);
+                    curBlock = finalBlock;
                 }
                 break;
             case For:
                 //Stmt → 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
+                BasicBlock basicBlock = curBlock;
+                if (stmtNode.getForStmtNodeFir() != null) {
+                    ForStmt(stmtNode.getForStmtNodeFir());
+                }
 
+                BasicBlock condBlock = null;
+                if (stmtNode.getCondNode() != null) {
+                    condBlock = buildFactory.buildBasicBlock(curFunction);
+                }
+                BasicBlock forStmtBlock = null;
+                if (stmtNode.getForStmtNodeSec() != null) {
+                    forStmtBlock = buildFactory.buildBasicBlock(curFunction);
+                }
+                BasicBlock forBlock = buildFactory.buildBasicBlock(curFunction);
+                BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
+                buildFactory.buildBr(curBlock, condBlock == null ? forBlock : condBlock);
+                if (forStmtBlock != null) {
+                    continueBlock = forStmtBlock;
+                } else if (condBlock != null) {
+                    continueBlock = condBlock;
+                } else {
+                    continueBlock = forBlock;
+                }
+                forEndBlock = finalBlock;
+                curBlock = forBlock;
+                Stmt(stmtNode.getStmtNode());
+
+                //进行到这里，curBlock是for循环体的最后一个语句块
+                if (forStmtBlock != null) {
+                    buildFactory.buildBr(curBlock, forStmtBlock);
+                } else if (condBlock != null) {
+                    buildFactory.buildBr(curBlock, condBlock);
+                } else {
+                    buildFactory.buildBr(curBlock, forBlock);
+                }
+
+                if (stmtNode.getForStmtNodeSec() != null) {
+                    curBlock = forStmtBlock;
+                    ForStmt(stmtNode.getForStmtNodeSec());
+                }
+                buildFactory.buildBr(curBlock, condBlock == null ? forBlock : condBlock);
+
+                curBlock = condBlock;
+                curTrueBlock = forBlock;
+                curFalseBlock = finalBlock;
+                if (stmtNode.getCondNode() != null) {
+                    Cond(stmtNode.getCondNode());
+                }
+                curBlock = finalBlock;
                 break;
             case Break:
                 // Stmt → 'break' ';'
@@ -364,33 +430,106 @@ public class IRGenerator {
         }
     }
 
+    private void ForStmt(ForStmtNode forStmtNode) {
+        // ForStmt → LVal '=' Exp
+        String name = forStmtNode.getlValNode().getIdent().getContent();
+        Value value = cur.getValueDeep(name);
+        tmpValue = null;
+        Exp(forStmtNode.getExpNode());
+        buildFactory.buildStore(curBlock, value, tmpValue);
+    }
+
     private void Cond(CondNode condNode) {
         // Cond → LOrExp
         LOrExp(condNode.getlOrExpNode());
     }
 
     private void LOrExp(LOrExpNode lOrExpNode) {
-        //LOrExp → LAndExp ['||' LOrExp]
-        BasicBlock trueBlock = curTrueBlock;
-        BasicBlock falseBlock = curFalseBlock;
-        BasicBlock tmpFalseBlock = curFalseBlock;
-        BasicBlock thenBlock = null;
+        // LOrExp → LAndExp ['||' LOrExp]
+        BasicBlock trueBlock = curTrueBlock;//整个if为true时跳转到的
+        BasicBlock falseBlock = curFalseBlock;//整个if为false时跳转到的
+        BasicBlock nextBlock = null;
+        BasicBlock landFalseBlock = curFalseBlock;//如果land为false，要跳到的基本快
         if (lOrExpNode.getlOrExpNode() != null) {
-            thenBlock = buildFactory.buildBasicBlock(curFunction);
-            tmpFalseBlock = thenBlock;
+            nextBlock = buildFactory.buildBasicBlock(curFunction);
+            landFalseBlock = nextBlock;
         }
-        curFalseBlock = tmpFalseBlock;
+        curFalseBlock = landFalseBlock;
         LAndExp(lOrExpNode.getlAndExpNode());
         curTrueBlock = trueBlock;
         curFalseBlock = falseBlock;
         if (lOrExpNode.getlOrExpNode() != null) {
-            curBlock = thenBlock;
+            curBlock = nextBlock;
             LOrExp(lOrExpNode.getlOrExpNode());
         }
     }
 
     private void LAndExp(LAndExpNode lAndExpNode) {
+        //LAndExp → EqExp ['&&' LAndExp]
+        BasicBlock trueBlock = curTrueBlock;//整个if为true时跳转到的
+        BasicBlock falseBlock = curFalseBlock;//整个if为false时跳转到的
+        BasicBlock nextBlock = null;
+        BasicBlock eqTrueBlock = curTrueBlock;//如果eq为true，要跳到的基本块
+        if (lAndExpNode.getlAndExpNode() != null) {
+            nextBlock = buildFactory.buildBasicBlock(curFunction);
+            eqTrueBlock = nextBlock;
+        }
+        curTrueBlock = eqTrueBlock;
+        EqExp(lAndExpNode.getEqExpNode());
+        tmpValue = buildFactory.buildNeZero(curBlock, tmpValue);
+        buildFactory.buildBr(curBlock, curTrueBlock, curFalseBlock, tmpValue);
+        curFalseBlock = falseBlock;
+        curTrueBlock = trueBlock;
+        if (lAndExpNode.getlAndExpNode() != null) {
+            curBlock = nextBlock;
+            LAndExp(lAndExpNode.getlAndExpNode());
+        }
+    }
 
+    private void EqExp(EqExpNode eqExpNode) {
+        //EqExp → RelExp [('==' | '!=') EqExp]
+        tmpValue = null;
+        RelExp(eqExpNode.getRelExpNode());
+        Value leftValue = tmpValue;
+        EqExpNode curEqExpNode = eqExpNode;
+        while (curEqExpNode.getEqExpNode() != null) {
+            TokenType op = curEqExpNode.getOpType();
+            curEqExpNode = curEqExpNode.getEqExpNode();
+            tmpValue = null;
+            RelExp(curEqExpNode.getRelExpNode());
+            Value rightValue = tmpValue;
+            if (op == TokenType.EQL) {
+                leftValue = buildFactory.buildBinary(curBlock, Operator.Eq, leftValue, rightValue);
+            } else {
+                leftValue = buildFactory.buildBinary(curBlock, Operator.Ne, leftValue, rightValue);
+            }
+        }
+        tmpValue = leftValue;
+    }
+
+    private void RelExp(RelExpNode relExpNode) {
+        //RelExp → AddExp [('<' | '>' | '<=' | '>=') RelExp]
+        tmpValue = null;
+        AddExp(relExpNode.getAddExpNode());
+        Value leftValue = tmpValue;
+        RelExpNode curRelExpNode = relExpNode;
+        while (curRelExpNode.getRelExpNode() != null) {
+            TokenType op = curRelExpNode.getOpType();
+            curRelExpNode = curRelExpNode.getRelExpNode();
+            tmpValue = null;
+            AddExp(curRelExpNode.getAddExpNode());
+            Value rightValue = tmpValue;
+            if (op == TokenType.GEQ) {
+                leftValue = buildFactory.buildBinary(curBlock, Operator.Ge, leftValue, rightValue);
+            } else if (op == TokenType.LEQ) {
+                leftValue = buildFactory.buildBinary(curBlock, Operator.Le, leftValue, rightValue);
+            } else if (op == TokenType.GRE) {
+                leftValue = buildFactory.buildBinary(curBlock, Operator.Gt, leftValue, rightValue);
+            } else {
+                leftValue = buildFactory.buildBinary(curBlock, Operator.Lt, leftValue, rightValue);
+            }
+        }
+        tmpValue = leftValue;
     }
 
     private void FuncFParams(FuncFParamsNode funcFParamsNode) {
@@ -416,6 +555,11 @@ public class IRGenerator {
             String name = funcFParamNode.getIdent().getContent();
             cur.addValue(name, tmpValue);//先暂时加入表中
         } else {
+            tmpType = null;
+            BType(funcFParamNode.getbTypeNode());
+            if (funcFParamNode.isArray() == 1) {
+                tmpType = buildFactory.getPointerType(tmpType);
+            }
             String name = funcFParamNode.getIdent().getContent();
             tmpValue = cur.getValueDeep(name);
             Value value = buildFactory.buildVar(curBlock, tmpValue, false, tmpType);
@@ -477,6 +621,7 @@ public class IRGenerator {
                 InitVal(varDefNode.getInitValNode());
             }
         } else {
+            //非数组
             if (varDefNode.getInitValNode() != null) {
                 tmpValue = null;
                 if (isGlobal) {
@@ -527,23 +672,23 @@ public class IRGenerator {
             }
         } else {
             if (isGlobal) isConst = true;//如果是全局变量，那么数组元素有初始值或者为0
-            int tmpOffset = 0;
+            int offset = 0;
             for (ExpNode expNode : initValNode.getExpNodes()) {
                 tmpValue = null;
                 saveValue = null;
                 Exp(expNode);
                 if (isGlobal) {
-                    if (tmpType == IntegerType.i32) {
+                    if (tmpType == IntegerType.i32 || (tmpType instanceof ArrayType && ((ArrayType) tmpType).getElementType() == IntegerType.i32)) {
                         tmpValue = buildFactory.getConstInt(saveValue);
                     } else {
                         tmpValue = buildFactory.getConstChar(saveValue);
                     }
-                    buildFactory.buildInitArray(curArray, tmpOffset, tmpValue);
+                    buildFactory.buildInitArray(curArray, offset, tmpValue);
                 } else {
                     //计算数组元素地址，保存值
-                    buildFactory.buildStore(curBlock, buildFactory.buildGEP(curBlock, curArray, tmpOffset), tmpValue);
+                    buildFactory.buildStore(curBlock, buildFactory.buildGEP(curBlock, curArray, offset), tmpValue);
                 }
-                tmpOffset++;
+                offset++;
             }
             isConst = false;
         }
@@ -799,7 +944,9 @@ public class IRGenerator {
             if (lValNode.getExpNode() != null) {
                 tmpValue = null;
                 Exp(lValNode.getExpNode());
-                tmpValue = buildFactory.buildGEP(curBlock, addr, tmpValue);
+                Value array = buildFactory.buildLoad(curBlock, addr);
+                tmpValue = buildFactory.buildGEP(curBlock, array, tmpValue);
+                tmpValue = buildFactory.buildLoad(curBlock, tmpValue);
             } else {
                 tmpValue = buildFactory.buildLoad(curBlock, addr);
             }

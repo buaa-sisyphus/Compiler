@@ -76,18 +76,20 @@ public class BuildFactory {
     public BinaryInst buildBinary(BasicBlock basicBlock, Operator op, Value left, Value right) {
         Value newLeft = left;
         Value newRight = right;
-        if (left.getType() == IntegerType.i8) {
+        if (left.getType() == IntegerType.i8 || left.getType() == IntegerType.i1) {
             newLeft = buildZext(basicBlock, left);
         }
-        if (right.getType() == IntegerType.i8) {
+        if (right.getType() == IntegerType.i8 || right.getType() == IntegerType.i1) {
             newRight = buildZext(basicBlock, right);
         }
         BinaryInst binaryInst = new BinaryInst(basicBlock, op, newLeft, newRight);
         basicBlock.addInstruction(binaryInst);
-        if (op == Operator.And || op == Operator.Or) {
-            binaryInst = buildBinary(basicBlock, Operator.Ne, binaryInst, ConstInt.ZERO);
-            basicBlock.addInstruction(binaryInst);
-        }
+        return binaryInst;
+    }
+
+    public BinaryInst buildNeZero(BasicBlock basicBlock, Value value) {
+        BinaryInst binaryInst = new BinaryInst(basicBlock, Operator.Ne, value, ConstInt.ZERO);
+        basicBlock.addInstruction(binaryInst);
         return binaryInst;
     }
 
@@ -98,8 +100,8 @@ public class BuildFactory {
     /**
      * Var
      */
-    public GlobalVar buildGlobalVar(String name, Type type, Value value,boolean isConst, boolean isString) {
-        GlobalVar var = new GlobalVar(name, type, value,isConst, isString);
+    public GlobalVar buildGlobalVar(String name, Type type, Value value, boolean isConst, boolean isString) {
+        GlobalVar var = new GlobalVar(name, type, value, isConst, isString);
         IRModule.getInstance().addGlobalVar(var);
         return var;
     }
@@ -110,11 +112,11 @@ public class BuildFactory {
         basicBlock.addInstruction(allocaInst);
         if (value != null) {
             //如果变量有值，就保存
-            if (allocaType != value.getType()) {
+            if (!allocaType.toString().equals(value.getType().toString())) {
                 //如果分配的类型和值的类型不一样，要进行位操作
                 if (allocaType == IntegerType.i32) {
                     value = buildZext(basicBlock, value);
-                } else {
+                } else if (allocaType == IntegerType.i8) {
                     value = buildTrunc(basicBlock, value);
                 }
             }
@@ -138,9 +140,9 @@ public class BuildFactory {
     /**
      * Array
      */
-    public GlobalVar buildGlobalArray(String name, Type type, boolean isConst,boolean isString) {
+    public GlobalVar buildGlobalArray(String name, Type type, boolean isConst, boolean isString) {
         Value constArray = new ConstArray(type, ((ArrayType) type).getElementType(), ((ArrayType) type).getCapacity());
-        GlobalVar var = new GlobalVar(name, type, constArray,isConst, isString);
+        GlobalVar var = new GlobalVar(name, type, constArray, isConst, isString);
         IRModule.getInstance().addGlobalVar(var);
         return var;
     }

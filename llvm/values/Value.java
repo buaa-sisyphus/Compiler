@@ -13,12 +13,11 @@ public class Value {
     private List<Use> usesList; // 使用了这个 Value 的 User 列表，这对应着 def-use 关系
     public static int REG_NUMBER = 0; // LLVM 中的寄存器编号
     public static int STR_NUMBER = 0;
-    private final String id; // LLVM 中的 Value 的唯一编号
+    public static int LABEL_NUMBER = 0;
 
     public Value(String name, Type type) {
         this.name = name;
         this.type = type;
-        this.id = UniqueIdGen.getInstance().getUniqueId();
         this.usesList = new ArrayList<>();
     }
 
@@ -52,16 +51,6 @@ public class Value {
 
     public void addUse(Use use) {
         this.usesList.add(use);
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getUniqueName() {
-        if (isNumber()) return getName();
-        if (isGlobal()) return getGlobalName();
-        return getName() + "_" + getId();
     }
 
     public String getGlobalName() {

@@ -15,7 +15,7 @@ public class CallInst extends TerminatorInst {
     public CallInst(BasicBlock basicBlock, Function function, List<Value> arguments) {
         super(((FunctionType) function.getType()).getReturnType(), Operator.Call, basicBlock);
         if (((FunctionType) function.getType()).getReturnType() != VoidType.voidType) {
-            setName("%" + REG_NUMBER++);
+            setName("%var_" + REG_NUMBER++);
         }
         this.addOperand(function);
         for (int i = 0; i < arguments.size(); i++) {

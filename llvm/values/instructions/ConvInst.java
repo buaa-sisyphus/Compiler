@@ -9,7 +9,7 @@ import llvm.values.Value;
 public class ConvInst extends Instruction {
     public ConvInst(BasicBlock basicBlock, Operator op, Value value) {
         super(VoidType.voidType, op, basicBlock);
-        this.setName("%" + REG_NUMBER++);
+        this.setName("%var_" + REG_NUMBER++);
         if (op == Operator.Zext) {
             setType(IntegerType.i32);
         } else {

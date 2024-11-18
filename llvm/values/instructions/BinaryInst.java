@@ -3,8 +3,6 @@ package llvm.values.instructions;
 import llvm.types.IntegerType;
 import llvm.types.VoidType;
 import llvm.values.BasicBlock;
-import llvm.values.Const;
-import llvm.values.ConstInt;
 import llvm.values.Value;
 
 public class BinaryInst extends Instruction {
@@ -16,7 +14,7 @@ public class BinaryInst extends Instruction {
         if (isCond()) {
             this.setType(IntegerType.i1);
         }
-        this.setName("%" + REG_NUMBER++);
+        this.setName("%var_" + REG_NUMBER++);
     }
 
     public boolean isAdd() {
@@ -37,14 +35,6 @@ public class BinaryInst extends Instruction {
 
     public boolean isMod() {
         return this.getOperator() == Operator.Mod;
-    }
-
-    public boolean isShl() {
-        return this.getOperator() == Operator.Shl;
-    }
-
-    public boolean isShr() {
-        return this.getOperator() == Operator.Shr;
     }
 
     public boolean isAnd() {
@@ -105,12 +95,6 @@ public class BinaryInst extends Instruction {
                 break;
             case Mod:
                 s += "srem i32 ";
-                break;
-            case Shl:
-                s += "shl i32 ";
-                break;
-            case Shr:
-                s += "ashr i32 ";
                 break;
             case And:
                 s += "and " + this.getOperands().get(0).getType().toString() + " ";

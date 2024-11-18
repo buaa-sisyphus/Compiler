@@ -12,6 +12,6 @@ public class PhiInst extends MemInst{
         for (Value value : values) {
             this.addOperand(value);
         }
-        this.setName("%" + REG_NUMBER++);
+        this.setName("%var_" + REG_NUMBER++);
     }
 }

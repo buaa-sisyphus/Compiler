@@ -28,19 +28,6 @@ public class ConstInt extends Const {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ConstInt that = (ConstInt) o;
-        return value == that.value;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
-    }
-
-    @Override
     public String toString() {
         return "i32 " + this.value;
     }

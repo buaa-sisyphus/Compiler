@@ -1,6 +1,7 @@
 package llvm.values.instructions;
 
 import llvm.types.ArrayType;
+import llvm.types.IntegerType;
 import llvm.types.PointerType;
 import llvm.types.Type;
 import llvm.values.BasicBlock;
@@ -11,7 +12,7 @@ public class GEPInst extends MemInst{
 
     public GEPInst(BasicBlock basicBlock, Value pointer, Value index) {
         super(new PointerType(getElementType(pointer)), Operator.GEP, basicBlock);
-        this.setName("%" + REG_NUMBER++);
+        this.setName("%var_" + REG_NUMBER++);
         this.addOperand(pointer);
         this.addOperand(index);
         this.elementType = getElementType(pointer);
@@ -31,6 +32,8 @@ public class GEPInst extends MemInst{
             Type targetType = ((PointerType) type).getTargetType();
             if (targetType instanceof ArrayType) {
                 return ((ArrayType) targetType).getElementType();
+            }else if(targetType instanceof IntegerType) {
+                return targetType;
             }
         }
         //寄

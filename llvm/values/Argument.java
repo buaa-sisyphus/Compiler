@@ -7,7 +7,7 @@ public class Argument extends Value {
     private int index;//第几个参数
 
     public Argument(Type type, int index, Function function, boolean isLibraryFunction) {
-        super(isLibraryFunction ? "" : "%" + REG_NUMBER++, type);
+        super(isLibraryFunction ? "" : "%arg_" + REG_NUMBER++, type);
         this.index = index;
         this.belongFunc = function;
     }

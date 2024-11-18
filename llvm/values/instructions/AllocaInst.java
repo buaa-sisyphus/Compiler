@@ -11,7 +11,7 @@ public class AllocaInst extends MemInst{
 
     public AllocaInst(BasicBlock basicBlock, boolean isConst, Type allocaType) {
         super(new PointerType(allocaType), Operator.Alloca, basicBlock);
-        this.setName("%" + REG_NUMBER++);
+        this.setName("%var_" + REG_NUMBER++);
         this.isConst = isConst;
         this.allocaType = allocaType;
     }

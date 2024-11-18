@@ -1,6 +1,7 @@
 package node;
 
 import token.Token;
+import token.TokenType;
 import utils.IOUtils;
 
 /* EqExp → RelExp | EqExp ('==' | '!=') RelExp
@@ -35,5 +36,9 @@ public class EqExpNode extends Node {
 
     public RelExpNode getRelExpNode() {
         return relExpNode;
+    }
+
+    public TokenType getOpType(){
+        return op.getType();
     }
 }

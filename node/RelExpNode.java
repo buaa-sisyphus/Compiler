@@ -1,6 +1,7 @@
 package node;
 
 import token.Token;
+import token.TokenType;
 import utils.IOUtils;
 
 /* RelExp → AddExp | RelExp ('<' | '>' | '<=' | '>=') AddExp
@@ -35,5 +36,9 @@ public class RelExpNode extends Node{
 
     public AddExpNode getAddExpNode() {
         return addExpNode;
+    }
+
+    public TokenType getOpType(){
+        return op.getType();
     }
 }
