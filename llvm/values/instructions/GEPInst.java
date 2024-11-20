@@ -45,10 +45,18 @@ public class GEPInst extends MemInst{
         StringBuilder s = new StringBuilder();
         Value pointer = getPointer();
         Value index = getIndex();
-        s.append(getName()).append(" = getelementptr ");
+        s.append(getName()).append(" = getelementptr inbounds ");
         s.append(((PointerType)pointer.getType()).getTargetType()).append(", ");
         s.append(pointer.getType()).append(" ").append(pointer.getName()).append(", ");
-        s.append("i32 0, ").append(index.getType()).append(" ").append(index.getName());
+
+        if(((PointerType) pointer.getType()).getTargetType() instanceof ArrayType) {
+            //一维数组指针，如[i8 x 8]*
+            s.append("i32 0, ").append(index.getType()).append(" ").append(index.getName());
+        }else{
+            //普通指针，如i8*
+            s.append(index.getType()).append(" ").append(index.getName());
+        }
+
         return s.toString();
     }
 }

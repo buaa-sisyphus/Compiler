@@ -71,22 +71,44 @@ public class ConstArray extends Const {
         isString = true;
     }
 
+    public boolean isAllZero() {
+        if (!init) return true;
+        Value constZero = null;
+        if (elementType == IntegerType.i32) {
+            constZero = ConstInt.ZERO;
+        } else {
+            constZero = ConstChar.ZERO;
+        }
+        for (Value v : array) {
+            if (!v.toString().equals(constZero.toString())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (isString) {
             //是一个字符串
-            sb.append(((ConstString)array.get(0)).toString());
+            sb.append(((ConstString) array.get(0)).toString());
         } else {
             //是一个字符数组或者数字数组
-            sb.append(this.getType().toString()).append(" ").append("[");
-            for (int i = 0; i < array.size(); i++) {
-                if (i != 0) {
-                    sb.append(", ");
+            sb.append(this.getType().toString()).append(" ");
+            if (isAllZero()) {
+                //避免tle
+                sb.append("zeroinitializer");
+            } else {
+                sb.append("[");
+                for (int i = 0; i < array.size(); i++) {
+                    if (i != 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(array.get(i).toString());
                 }
-                sb.append(array.get(i).toString());
+                sb.append("]");
             }
-            sb.append("]");
         }
         return sb.toString();
     }

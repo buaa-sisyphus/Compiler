@@ -39,6 +39,7 @@ public class IRGenerator {
     private boolean isSecond = false;
     private BasicBlock curTrueBlock = null;
     private BasicBlock curFalseBlock = null;
+    private boolean needLoad = true;
 
     private void initTable() {
         root = new ValueTable();
@@ -162,6 +163,11 @@ public class IRGenerator {
             isSecond = false;
         }
         Block(funcDefNode.getBlockNode());
+        if (((FunctionType) curFunction.getType()).getReturnType() == VoidType.voidType) {
+            //在addInstruction中会检查curBlock的末尾语句，这里不需要检查。
+            //防止没有return的情况
+            buildFactory.buildRet(curBlock);
+        }
         popTable();
         //更新curFunction
         curFunction = oldFunc;
@@ -186,29 +192,15 @@ public class IRGenerator {
 
     private void Stmt(StmtNode stmtNode) {
         StmtNode.StmtType stmtType = stmtNode.getStmtType();
+        Value returnValue = null;
+        Value addr = null;
         switch (stmtType) {
             case LVal:
                 // Stmt → LVal '=' Exp ';'
-                if (stmtNode.getlValNode().getExpNode() == null) {
-                    //非数组
-                    LValNode lValNode = stmtNode.getlValNode();
-                    String name = lValNode.getIdent().getContent();
-                    Value pointer = cur.getValueDeep(name);
-                    tmpValue = null;
-                    Exp(stmtNode.getExpNode());
-                    tmpValue = buildFactory.buildStore(curBlock, pointer, tmpValue);
-                } else {
-                    //数组
-                    LValNode lValNode = stmtNode.getlValNode();
-                    String name = lValNode.getIdent().getContent();
-                    Value addr = cur.getValueDeep(name);
-                    tmpValue = null;
-                    Exp(lValNode.getExpNode());
-                    addr = buildFactory.buildGEP(curBlock, addr, tmpValue);
-                    tmpValue = null;
-                    Exp(stmtNode.getExpNode());
-                    tmpValue = buildFactory.buildStore(curBlock, addr, tmpValue);
-                }
+                LVal(stmtNode.getlValNode());
+                Value pointer = tmpValue;
+                Exp(stmtNode.getExpNode());
+                buildFactory.buildStore(curBlock, pointer, tmpValue);
                 break;
             case Exp:
                 // Stmt → [Exp] ';'
@@ -235,16 +227,18 @@ public class IRGenerator {
 
                     curBlock = finalBlock;
                 } else {
-                    //进入if前的基本快
+                    //进入if前的基本块
                     BasicBlock basicBlock = curBlock;
 
                     BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
                     curBlock = trueBlock;
                     Stmt(stmtNode.getStmtNodes().get(0));
+                    BasicBlock trueEndBlock = curBlock;//不可少
 
                     BasicBlock falseBlock = buildFactory.buildBasicBlock(curFunction);
                     curBlock = falseBlock;
                     Stmt(stmtNode.getStmtNodes().get(1));
+                    BasicBlock falseEndBlock = curBlock;//不可少
 
                     curBlock = basicBlock;
                     curTrueBlock = trueBlock;
@@ -252,8 +246,8 @@ public class IRGenerator {
                     Cond(stmtNode.getCondNode());
 
                     BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
-                    buildFactory.buildBr(trueBlock, finalBlock);
-                    buildFactory.buildBr(falseBlock, finalBlock);
+                    buildFactory.buildBr(trueEndBlock, finalBlock);
+                    buildFactory.buildBr(falseEndBlock, finalBlock);
                     curBlock = finalBlock;
                 }
                 break;
@@ -380,43 +374,18 @@ public class IRGenerator {
                 break;
             case GetChar:
                 // Stmt → LVal '=' 'getchar''('')'';'
-                if (stmtNode.getlValNode().getExpNode() == null) {
-                    //非数组元素
-                    LValNode lValNode = stmtNode.getlValNode();
-                    Value value = cur.getValueDeep(lValNode.getIdent().getContent());//一定是i8类型
-                    Value returnValue = buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("getchar"), new ArrayList<>());//i32
-                    Value truncValue = buildFactory.buildTrunc(curBlock, returnValue);//截断成i8
-                    tmpValue = buildFactory.buildStore(curBlock, value, truncValue);
-                } else {
-                    //给数组元素赋值
-                    LValNode lValNode = stmtNode.getlValNode();
-                    Value addr = cur.getValueDeep(lValNode.getIdent().getContent());
-                    tmpValue = null;
-                    Exp(lValNode.getExpNode());
-                    addr = buildFactory.buildGEP(curBlock, addr, tmpValue);//一定是i8*
-                    Value returnValue = buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("getchar"), new ArrayList<>());
-                    Value truncValue = buildFactory.buildTrunc(curBlock, returnValue);
-                    tmpValue = buildFactory.buildStore(curBlock, addr, truncValue);
-                }
+                LVal(stmtNode.getlValNode());
+                addr = tmpValue;
+                returnValue = buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("getchar"), new ArrayList<>());//i32
+                Value truncValue = buildFactory.buildTrunc(curBlock, returnValue);//截断成i8
+                buildFactory.buildStore(curBlock, addr, returnValue);
                 break;
             case GetInt:
                 // Stmt → LVal '=' 'getint''('')'';'
-                if (stmtNode.getlValNode().getExpNode() == null) {
-                    //非数组元素
-                    LValNode lValNode = stmtNode.getlValNode();
-                    Value value = cur.getValueDeep(lValNode.getIdent().getContent());
-                    Value returnValue = buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("getint"), new ArrayList<>());
-                    tmpValue = buildFactory.buildStore(curBlock, value, returnValue);
-                } else {
-                    //给数组元素赋值
-                    LValNode lValNode = stmtNode.getlValNode();
-                    Value addr = cur.getValueDeep(lValNode.getIdent().getContent());
-                    tmpValue = null;
-                    Exp(lValNode.getExpNode());
-                    addr = buildFactory.buildGEP(curBlock, addr, tmpValue);
-                    Value returnValue = buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("getint"), new ArrayList<>());
-                    tmpValue = buildFactory.buildStore(curBlock, addr, returnValue);
-                }
+                LVal(stmtNode.getlValNode());
+                addr = tmpValue;
+                returnValue = buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("getint"), new ArrayList<>());
+                tmpValue = buildFactory.buildStore(curBlock, addr, returnValue);
                 break;
             case Block:
                 // Stmt → Block
@@ -603,16 +572,15 @@ public class IRGenerator {
             //数组
             isConst = true;
             ConstExp(varDefNode.getConstExpNode());
-            tmpType = buildFactory.getArrayType(tmpType, saveValue);
+            Type arrayType = buildFactory.getArrayType(tmpType, saveValue);
             isConst = false;
             if (isGlobal) {
-                tmpValue = buildFactory.buildGlobalArray(name, tmpType, false, false);
+                tmpValue = buildFactory.buildGlobalArray(name, arrayType, false, false);
                 if (varDefNode.getInitValNode() != null) {
-                    //??
                     ((ConstArray) ((GlobalVar) tmpValue).getValue()).setInit(true);
                 }
             } else {
-                tmpValue = buildFactory.buildArray(curBlock, false, tmpType);
+                tmpValue = buildFactory.buildArray(curBlock, false, arrayType);
             }
             cur.addValue(name, tmpValue);
             curArray = tmpValue;
@@ -716,7 +684,7 @@ public class IRGenerator {
             if (tmpType == IntegerType.i32) {
                 tmpValue = buildFactory.getConstInt(saveValue == null ? 0 : saveValue);//将常量包装成constInt
             } else {
-                tmpValue = buildFactory.getConstChar(saveValue == null ? '\0' : saveValue);//将常量包装成constInt
+                tmpValue = buildFactory.getConstChar(saveValue == null ? '\0' : saveValue);//将常量包装成constChar
             }
             cur.addConstValue(name, saveValue);
             if (isGlobal) {
@@ -768,7 +736,7 @@ public class IRGenerator {
             for (ConstExpNode constExpNode : constInitValNode.getConstExpNodes()) {
                 tmpValue = null;
                 ConstExp(constExpNode);//返回值在saveValue中
-                tmpValue = buildFactory.getConstInt(saveValue);
+                tmpValue = tmpType == IntegerType.i32 ? buildFactory.getConstInt(saveValue) : buildFactory.getConstChar(saveValue);
                 if (isGlobal) {
                     //如果是全局数组，直接保存值
                     buildFactory.buildInitArray(curArray, tmpOffset, tmpValue);
@@ -920,7 +888,11 @@ public class IRGenerator {
         if (primaryExpNode.getExpNode() != null) {
             Exp(primaryExpNode.getExpNode());
         } else if (primaryExpNode.getlValNode() != null) {
+            needLoad = true;
             LVal(primaryExpNode.getlValNode());
+            if (needLoad) {
+                tmpValue = buildFactory.buildLoad(curBlock, tmpValue);
+            }
         } else if (primaryExpNode.getNumberNode() != null) {
             Number(primaryExpNode.getNumberNode());
         } else {
@@ -930,6 +902,7 @@ public class IRGenerator {
 
     private void LVal(LValNode lValNode) {
         // LVal → Ident ['[' Exp ']']
+        //除了常量统一返回地址
         if (isConst) {
             StringBuilder name = new StringBuilder(lValNode.getIdent().getContent());
             if (lValNode.getExpNode() != null) {
@@ -937,18 +910,33 @@ public class IRGenerator {
                 Exp(lValNode.getExpNode());
                 name.append(";").append(saveValue == null ? 0 : saveValue);
             }
-            saveValue = cur.getConst(name.toString());
+            saveValue = cur.getConstDeep(name.toString());
+            needLoad = false;
         } else {
             String name = lValNode.getIdent().getContent();
             Value addr = cur.getValueDeep(name);
             if (lValNode.getExpNode() != null) {
                 tmpValue = null;
                 Exp(lValNode.getExpNode());
-                Value array = buildFactory.buildLoad(curBlock, addr);
-                tmpValue = buildFactory.buildGEP(curBlock, array, tmpValue);
-                tmpValue = buildFactory.buildLoad(curBlock, tmpValue);
+                if (addr.getType() instanceof PointerType) {
+                    Type type = ((PointerType) addr.getType()).getTargetType();
+                    if (type instanceof ArrayType) {
+                        //对于类型是[i8 x 8]*这种的
+                        tmpValue = buildFactory.buildGEP(curBlock, addr, tmpValue);
+                    } else {
+                        //对于长度不知道的数组，类型是i8**或i32**这样的
+                        Value firstAddr = buildFactory.buildLoad(curBlock, addr);
+                        tmpValue = buildFactory.buildGEP(curBlock, firstAddr, tmpValue);
+                    }
+                }
             } else {
-                tmpValue = buildFactory.buildLoad(curBlock, addr);
+                Type type = ((PointerType) addr.getType()).getTargetType();
+                if (type instanceof ArrayType) {
+                    tmpValue = buildFactory.buildGEP(curBlock, addr, 0);
+                    needLoad = false;
+                } else {
+                    tmpValue = addr;
+                }
             }
         }
     }

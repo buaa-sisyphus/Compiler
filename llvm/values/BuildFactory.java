@@ -52,7 +52,7 @@ public class BuildFactory {
                 newArguments.add(buildZext(basicBlock, arg));
             } else if (type == IntegerType.i8 && arg.getType() == IntegerType.i32) {
                 newArguments.add(buildTrunc(basicBlock, arg));
-            } else {
+            }else {
                 newArguments.add(arg);
             }
         }
@@ -200,6 +200,12 @@ public class BuildFactory {
      * MemInst
      */
     public StoreInst buildStore(BasicBlock basicBlock, Value pointer, Value value) {
+        Type targetType = ((PointerType) pointer.getType()).getTargetType();
+        if (targetType == IntegerType.i32 && value.getType() == IntegerType.i8) {
+            value = buildFactory.buildZext(basicBlock, value);
+        } else if (targetType == IntegerType.i8 && value.getType() == IntegerType.i32) {
+            value = buildFactory.buildTrunc(basicBlock, value);
+        }
         StoreInst storeInst = new StoreInst(basicBlock, pointer, value);
         basicBlock.addInstruction(storeInst);
         return storeInst;
