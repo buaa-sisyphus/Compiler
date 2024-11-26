@@ -21,22 +21,13 @@ public class IRGenerator {
 
     private ValueTable root;
     private ValueTable cur;
+    private BasicBlock curBlock = null;
     private BuildFactory buildFactory;
 
-    private boolean isGlobal = false;
-    private boolean isConst = false;
-    private Type tmpType = null;
     private Integer saveValue = null;
     private Value tmpValue = null;
-    private BasicBlock curBlock = null;
-    private Value curArray = null;
-    private String tmpName = null;
-    private List<Type> tmpTypeList = null;
-    private Function curFunction = null;
-    private int tmpIndex;
     private BasicBlock forEndBlock = null;
     private BasicBlock continueBlock = null;
-    private boolean isSecond = false;
     private BasicBlock curTrueBlock = null;
     private BasicBlock curFalseBlock = null;
     private boolean needLoad = true;
@@ -113,9 +104,8 @@ public class IRGenerator {
         cur.addValue("putint", putint);
         cur.addValue("putchar", putchar);
         cur.addValue("putstr", putstr);
-        isGlobal = true;
         for (DeclNode declNode : compUnitNode.getDeclNodes()) {
-            Decl(declNode);
+            Decl(declNode, true);
         }
         for (FuncDefNode funcDefNode : compUnitNode.getFuncDefNodes()) {
             FuncDef(funcDefNode);
@@ -125,88 +115,76 @@ public class IRGenerator {
 
     private void MainFuncDef(MainFuncDefNode mainFuncDefNode) {
         // MainFuncDef → 'int' 'main' '(' ')' Block
-        isGlobal = false;
         Function function = buildFactory.buildFunction("main", IntegerType.i32, new ArrayList<Type>());
-        curFunction = function;
         cur.addValue("main", function);
         pushTable();
         cur.addValue("main", function);
         curBlock = buildFactory.buildBasicBlock(function);
-        Block(mainFuncDefNode.getBlock());
-        isGlobal = true;
+        Block(mainFuncDefNode.getBlock(),function);
         popTable();
     }
 
     private void FuncDef(FuncDefNode funcDefNode) {
         // FuncDef → FuncType Ident '(' [FuncFParams] ')' Block
-        isGlobal = false;
-        FuncType(funcDefNode.getFuncTypeNode());
+        Type type = FuncType(funcDefNode.getFuncTypeNode());
         String name = funcDefNode.getIdent().getContent();
-        tmpTypeList = new ArrayList<>();
-        Function function = buildFactory.buildFunction(name, tmpType, tmpTypeList);
-        //更新curFunction
-        Function oldFunc = curFunction;
-        curFunction = function;
+        List<Type> typeList = new ArrayList<>();
+        //curFunction有变化
+        Function function = buildFactory.buildFunction(name, type, typeList);
         cur.addValue(name, function);
         pushTable();
         cur.addValue(name, function);
         if (funcDefNode.getFuncFParamsNode() != null) {
             //给tmpTypeList添加元素
-            isSecond = false;
-            FuncFParams(funcDefNode.getFuncFParamsNode());
+            FuncFParams(funcDefNode.getFuncFParamsNode(), typeList,function);
         }
-        curBlock = buildFactory.buildBasicBlock(curFunction);
+        curBlock = buildFactory.buildBasicBlock(function);
         if (funcDefNode.getFuncFParamsNode() != null) {
             //加入curBlock
-            isSecond = true;
-            FuncFParams(funcDefNode.getFuncFParamsNode());
-            isSecond = false;
+            FuncFParams(funcDefNode.getFuncFParamsNode(), null,function);
         }
-        Block(funcDefNode.getBlockNode());
-        if (((FunctionType) curFunction.getType()).getReturnType() == VoidType.voidType) {
+        Block(funcDefNode.getBlockNode(),function);
+        if (((FunctionType) function.getType()).getReturnType() == VoidType.voidType) {
             //在addInstruction中会检查curBlock的末尾语句，这里不需要检查。
             //防止没有return的情况
             buildFactory.buildRet(curBlock);
         }
         popTable();
-        //更新curFunction
-        curFunction = oldFunc;
-        isGlobal = true;
     }
 
-    private void Block(BlockNode blockNode) {
+    private void Block(BlockNode blockNode,Function curFunction) {
         // Block → '{' { BlockItem } '}'
         for (BlockItemNode blockItemNode : blockNode.getBlockItemNodes()) {
-            BlockItem(blockItemNode);
+            BlockItem(blockItemNode,curFunction);
         }
     }
 
-    private void BlockItem(BlockItemNode blockItemNode) {
+    private void BlockItem(BlockItemNode blockItemNode,Function curFunction) {
         // BlockItem → Decl | Stmt
         if (blockItemNode.getDeclNode() != null) {
-            Decl(blockItemNode.getDeclNode());
+            Decl(blockItemNode.getDeclNode(), false);
         } else {
-            Stmt(blockItemNode.getStmtNode());
+            Stmt(blockItemNode.getStmtNode(),curFunction);
         }
     }
 
-    private void Stmt(StmtNode stmtNode) {
+    private void Stmt(StmtNode stmtNode,Function curFunction) {
         StmtNode.StmtType stmtType = stmtNode.getStmtType();
         Value returnValue = null;
         Value addr = null;
         switch (stmtType) {
             case LVal:
                 // Stmt → LVal '=' Exp ';'
-                LVal(stmtNode.getlValNode());
+                LVal(stmtNode.getlValNode(), false);
                 Value pointer = tmpValue;
-                Exp(stmtNode.getExpNode());
+                Exp(stmtNode.getExpNode(), false);
                 buildFactory.buildStore(curBlock, pointer, tmpValue);
                 break;
             case Exp:
                 // Stmt → [Exp] ';'
                 if (stmtNode.getExpNode() != null) {
                     tmpValue = null;
-                    Exp(stmtNode.getExpNode());
+                    Exp(stmtNode.getExpNode(), false);
                 }
                 break;
             case If:
@@ -216,14 +194,14 @@ public class IRGenerator {
 
                     BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
                     curBlock = trueBlock;
-                    Stmt(stmtNode.getStmtNodes().get(0));
+                    Stmt(stmtNode.getStmtNodes().get(0),curFunction);
                     BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
                     buildFactory.buildBr(curBlock, finalBlock);
 
                     curTrueBlock = trueBlock;
                     curFalseBlock = finalBlock;
                     curBlock = basicBlock;
-                    Cond(stmtNode.getCondNode());
+                    Cond(stmtNode.getCondNode(),curFunction);
 
                     curBlock = finalBlock;
                 } else {
@@ -232,18 +210,18 @@ public class IRGenerator {
 
                     BasicBlock trueBlock = buildFactory.buildBasicBlock(curFunction);
                     curBlock = trueBlock;
-                    Stmt(stmtNode.getStmtNodes().get(0));
+                    Stmt(stmtNode.getStmtNodes().get(0),curFunction);
                     BasicBlock trueEndBlock = curBlock;//不可少
 
                     BasicBlock falseBlock = buildFactory.buildBasicBlock(curFunction);
                     curBlock = falseBlock;
-                    Stmt(stmtNode.getStmtNodes().get(1));
+                    Stmt(stmtNode.getStmtNodes().get(1),curFunction);
                     BasicBlock falseEndBlock = curBlock;//不可少
 
                     curBlock = basicBlock;
                     curTrueBlock = trueBlock;
                     curFalseBlock = falseBlock;
-                    Cond(stmtNode.getCondNode());
+                    Cond(stmtNode.getCondNode(),curFunction);
 
                     BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
                     buildFactory.buildBr(trueEndBlock, finalBlock);
@@ -278,7 +256,7 @@ public class IRGenerator {
                 }
                 forEndBlock = finalBlock;
                 curBlock = forBlock;
-                Stmt(stmtNode.getStmtNode());
+                Stmt(stmtNode.getStmtNode(),curFunction);
 
                 //进行到这里，curBlock是for循环体的最后一个语句块
                 if (forStmtBlock != null) {
@@ -299,7 +277,7 @@ public class IRGenerator {
                 curTrueBlock = forBlock;
                 curFalseBlock = finalBlock;
                 if (stmtNode.getCondNode() != null) {
-                    Cond(stmtNode.getCondNode());
+                    Cond(stmtNode.getCondNode(),curFunction);
                 }
                 curBlock = finalBlock;
                 break;
@@ -315,7 +293,7 @@ public class IRGenerator {
                 // Stmt → 'return' [Exp] ';'
                 if (stmtNode.getExpNode() != null) {
                     tmpValue = null;
-                    Exp(stmtNode.getExpNode());
+                    Exp(stmtNode.getExpNode(), false);
                     if (tmpValue.getType() != ((FunctionType) curFunction.getType()).getReturnType()) {
                         if (tmpValue.getType() == IntegerType.i32) {
                             //与函数返回类型i8不一样，当前为i32
@@ -335,7 +313,7 @@ public class IRGenerator {
                 String stringConst = stmtNode.getStringContent().replace("\\n", "\n");
                 List<Value> exps = new ArrayList<>();
                 for (ExpNode expNode : stmtNode.getExpNodes()) {
-                    Exp(expNode);
+                    Exp(expNode, false);
                     exps.add(tmpValue);
                 }
                 StringBuilder str = new StringBuilder();
@@ -374,7 +352,7 @@ public class IRGenerator {
                 break;
             case GetChar:
                 // Stmt → LVal '=' 'getchar''('')'';'
-                LVal(stmtNode.getlValNode());
+                LVal(stmtNode.getlValNode(), false);
                 addr = tmpValue;
                 returnValue = buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("getchar"), new ArrayList<>());//i32
                 Value truncValue = buildFactory.buildTrunc(curBlock, returnValue);//截断成i8
@@ -382,7 +360,7 @@ public class IRGenerator {
                 break;
             case GetInt:
                 // Stmt → LVal '=' 'getint''('')'';'
-                LVal(stmtNode.getlValNode());
+                LVal(stmtNode.getlValNode(), false);
                 addr = tmpValue;
                 returnValue = buildFactory.buildCall(curBlock, (Function) cur.getValueDeep("getint"), new ArrayList<>());
                 tmpValue = buildFactory.buildStore(curBlock, addr, returnValue);
@@ -390,7 +368,7 @@ public class IRGenerator {
             case Block:
                 // Stmt → Block
                 pushTable();
-                Block(stmtNode.getBlockNode());
+                Block(stmtNode.getBlockNode(),curFunction);
                 popTable();
                 break;
             default:
@@ -404,16 +382,16 @@ public class IRGenerator {
         String name = forStmtNode.getlValNode().getIdent().getContent();
         Value value = cur.getValueDeep(name);
         tmpValue = null;
-        Exp(forStmtNode.getExpNode());
+        Exp(forStmtNode.getExpNode(), false);
         buildFactory.buildStore(curBlock, value, tmpValue);
     }
 
-    private void Cond(CondNode condNode) {
+    private void Cond(CondNode condNode,Function curFunction) {
         // Cond → LOrExp
-        LOrExp(condNode.getlOrExpNode());
+        LOrExp(condNode.getlOrExpNode(),curFunction);
     }
 
-    private void LOrExp(LOrExpNode lOrExpNode) {
+    private void LOrExp(LOrExpNode lOrExpNode,Function curFunction) {
         // LOrExp → LAndExp ['||' LOrExp]
         BasicBlock trueBlock = curTrueBlock;//整个if为true时跳转到的
         BasicBlock falseBlock = curFalseBlock;//整个if为false时跳转到的
@@ -424,16 +402,16 @@ public class IRGenerator {
             landFalseBlock = nextBlock;
         }
         curFalseBlock = landFalseBlock;
-        LAndExp(lOrExpNode.getlAndExpNode());
+        LAndExp(lOrExpNode.getlAndExpNode(),curFunction);
         curTrueBlock = trueBlock;
         curFalseBlock = falseBlock;
         if (lOrExpNode.getlOrExpNode() != null) {
             curBlock = nextBlock;
-            LOrExp(lOrExpNode.getlOrExpNode());
+            LOrExp(lOrExpNode.getlOrExpNode(),curFunction);
         }
     }
 
-    private void LAndExp(LAndExpNode lAndExpNode) {
+    private void LAndExp(LAndExpNode lAndExpNode,Function curFunction) {
         //LAndExp → EqExp ['&&' LAndExp]
         BasicBlock trueBlock = curTrueBlock;//整个if为true时跳转到的
         BasicBlock falseBlock = curFalseBlock;//整个if为false时跳转到的
@@ -451,7 +429,7 @@ public class IRGenerator {
         curTrueBlock = trueBlock;
         if (lAndExpNode.getlAndExpNode() != null) {
             curBlock = nextBlock;
-            LAndExp(lAndExpNode.getlAndExpNode());
+            LAndExp(lAndExpNode.getlAndExpNode(),curFunction);
         }
     }
 
@@ -479,14 +457,14 @@ public class IRGenerator {
     private void RelExp(RelExpNode relExpNode) {
         //RelExp → AddExp [('<' | '>' | '<=' | '>=') RelExp]
         tmpValue = null;
-        AddExp(relExpNode.getAddExpNode());
+        AddExp(relExpNode.getAddExpNode(), false);
         Value leftValue = tmpValue;
         RelExpNode curRelExpNode = relExpNode;
         while (curRelExpNode.getRelExpNode() != null) {
             TokenType op = curRelExpNode.getOpType();
             curRelExpNode = curRelExpNode.getRelExpNode();
             tmpValue = null;
-            AddExp(curRelExpNode.getAddExpNode());
+            AddExp(curRelExpNode.getAddExpNode(), false);
             Value rightValue = tmpValue;
             if (op == TokenType.GEQ) {
                 leftValue = buildFactory.buildBinary(curBlock, Operator.Ge, leftValue, rightValue);
@@ -501,79 +479,75 @@ public class IRGenerator {
         tmpValue = leftValue;
     }
 
-    private void FuncFParams(FuncFParamsNode funcFParamsNode) {
+    private void FuncFParams(FuncFParamsNode funcFParamsNode, List<Type> typeList,Function curFunction) {
         // FuncFParams → FuncFParam { ',' FuncFParam }
-        tmpIndex = 0;
+        int index = 0;
         for (FuncFParamNode funcFParamNode : funcFParamsNode.getFuncFParamNodes()) {
-            FuncFParam(funcFParamNode);
-            tmpIndex++;
+            FuncFParam(funcFParamNode, index, typeList,curFunction);
+            index++;
         }
     }
 
-    private void FuncFParam(FuncFParamNode funcFParamNode) {
+    private void FuncFParam(FuncFParamNode funcFParamNode, int index, List<Type> typeList,Function curFunction) {
         // FuncFParam → BType Ident ['[' ']']
-        if (!isSecond) {
-            tmpType = null;
-            BType(funcFParamNode.getbTypeNode());
+        if (typeList != null) {
+            Type type = BType(funcFParamNode.getbTypeNode());
             if (funcFParamNode.isArray() == 1) {
                 //数组类型参数，实际上是指针类型
-                tmpType = buildFactory.getPointerType(tmpType);
+                type = buildFactory.getPointerType(type);
             }
-            tmpTypeList.add(tmpType);
-            tmpValue = buildFactory.buildArgument(tmpType, curFunction, tmpIndex, false);
+            typeList.add(type);
+            tmpValue = buildFactory.buildArgument(type, curFunction, index, false);
             String name = funcFParamNode.getIdent().getContent();
             cur.addValue(name, tmpValue);//先暂时加入表中
         } else {
-            tmpType = null;
-            BType(funcFParamNode.getbTypeNode());
+            Type type = BType(funcFParamNode.getbTypeNode());
             if (funcFParamNode.isArray() == 1) {
-                tmpType = buildFactory.getPointerType(tmpType);
+                type = buildFactory.getPointerType(type);
             }
             String name = funcFParamNode.getIdent().getContent();
             tmpValue = cur.getValueDeep(name);
-            Value value = buildFactory.buildVar(curBlock, tmpValue, false, tmpType);
+            Value value = buildFactory.buildVar(curBlock, tmpValue, false, type);
             cur.addValue(name, value);
         }
     }
 
-    private void FuncType(FuncTypeNode funcTypeNode) {
+    private Type FuncType(FuncTypeNode funcTypeNode) {
         if (funcTypeNode.getToken().getType() == TokenType.INTTK) {
-            tmpType = IntegerType.i32;
+            return IntegerType.i32;
         } else if (funcTypeNode.getToken().getType() == TokenType.CHARTK) {
-            tmpType = IntegerType.i8;
+            return IntegerType.i8;
         } else {
-            tmpType = VoidType.voidType;
+            return VoidType.voidType;
         }
     }
 
-    private void Decl(DeclNode declNode) {
+    private void Decl(DeclNode declNode, boolean isGlobal) {
         // Decl → ConstDecl | VarDecl
         ConstDeclNode constDeclNode = declNode.getConstDeclNode();
         if (constDeclNode != null) {
-            ConstDecl(constDeclNode);
+            ConstDecl(constDeclNode, isGlobal);
         } else {
             VarDeclNode varDeclNode = declNode.getVarDeclNode();
-            VarDecl(varDeclNode);
+            VarDecl(varDeclNode, isGlobal);
         }
     }
 
-    private void VarDecl(VarDeclNode varDeclNode) {
+    private void VarDecl(VarDeclNode varDeclNode, boolean isGlobal) {
         // VarDecl → BType VarDef { ',' VarDef } ';'
-        BType(varDeclNode.getbTypeNode());
+        Type type = BType(varDeclNode.getbTypeNode());
         for (VarDefNode varDefNode : varDeclNode.getVarDefNodes()) {
-            VarDef(varDefNode);
+            VarDef(varDefNode, type, isGlobal, false);
         }
     }
 
-    private void VarDef(VarDefNode varDefNode) {
+    private void VarDef(VarDefNode varDefNode, Type type, boolean isGlobal, boolean isConst) {
         // VarDef → Ident [ '[' ConstExp ']' ] | Ident [ '[' ConstExp ']' ] '=' InitVal
         String name = varDefNode.getIdent().getContent();
         if (varDefNode.getConstExpNode() != null) {
             //数组
-            isConst = true;
             ConstExp(varDefNode.getConstExpNode());
-            Type arrayType = buildFactory.getArrayType(tmpType, saveValue);
-            isConst = false;
+            Type arrayType = buildFactory.getArrayType(type, saveValue);
             if (isGlobal) {
                 tmpValue = buildFactory.buildGlobalArray(name, arrayType, false, false);
                 if (varDefNode.getInitValNode() != null) {
@@ -583,49 +557,40 @@ public class IRGenerator {
                 tmpValue = buildFactory.buildArray(curBlock, false, arrayType);
             }
             cur.addValue(name, tmpValue);
-            curArray = tmpValue;
+            Value curArray = tmpValue;
             if (varDefNode.getInitValNode() != null) {
-                tmpName = name;
-                InitVal(varDefNode.getInitValNode());
+                InitVal(varDefNode.getInitValNode(), type, curArray, isGlobal, isConst);
             }
         } else {
             //非数组
+            tmpValue = null;
+            if (isGlobal) {
+                saveValue = null;
+                isConst = true;
+            }
             if (varDefNode.getInitValNode() != null) {
-                tmpValue = null;
-                if (isGlobal) {
-                    saveValue = null;
-                    isConst = true;
-                }
-                InitVal(varDefNode.getInitValNode());
-                isConst = false;
-            } else {
-                tmpValue = null;
-                if (isGlobal) {
-                    saveValue = null;
-                    isConst = true;
-                }
-                isConst = false;
+                InitVal(varDefNode.getInitValNode(), type, null, isGlobal, isConst);
             }
             if (isGlobal) {
                 Value value;
-                if (tmpType == IntegerType.i32) {
+                if (type == IntegerType.i32) {
                     value = buildFactory.getConstInt(saveValue == null ? 0 : saveValue);
                 } else {
                     value = buildFactory.getConstChar(saveValue == null ? 0 : saveValue);
                 }
-                tmpValue = buildFactory.buildGlobalVar(name, tmpType, value, false, false);
+                tmpValue = buildFactory.buildGlobalVar(name, type, value, false, false);
                 cur.addValue(name, tmpValue);
             } else {
-                tmpValue = buildFactory.buildVar(curBlock, tmpValue, false, tmpType);
+                tmpValue = buildFactory.buildVar(curBlock, tmpValue, false, type);
                 cur.addValue(name, tmpValue);
             }
         }
     }
 
-    private void InitVal(InitValNode initValNode) {
+    private void InitVal(InitValNode initValNode, Type type, Value curArray, boolean isGlobal, boolean isConst) {
         // InitVal → Exp | '{' [ Exp { ',' Exp } ] '}' | StringConst
         if (initValNode.getExpNode() != null) {
-            Exp(initValNode.getExpNode());
+            Exp(initValNode.getExpNode(), isConst);
         } else if (initValNode.getStringConst() != null) {
             //去除原来保存的双引号，给末尾加上\0
             String str = initValNode.getStringContent() + "\0";
@@ -644,9 +609,9 @@ public class IRGenerator {
             for (ExpNode expNode : initValNode.getExpNodes()) {
                 tmpValue = null;
                 saveValue = null;
-                Exp(expNode);
+                Exp(expNode, isConst);
                 if (isGlobal) {
-                    if (tmpType == IntegerType.i32 || (tmpType instanceof ArrayType && ((ArrayType) tmpType).getElementType() == IntegerType.i32)) {
+                    if (type == IntegerType.i32 || (type instanceof ArrayType && ((ArrayType) type).getElementType() == IntegerType.i32)) {
                         tmpValue = buildFactory.getConstInt(saveValue);
                     } else {
                         tmpValue = buildFactory.getConstChar(saveValue);
@@ -658,30 +623,29 @@ public class IRGenerator {
                 }
                 offset++;
             }
-            isConst = false;
         }
     }
 
-    private void Exp(ExpNode expNode) {
+    private void Exp(ExpNode expNode, boolean isConst) {
         // Exp → AddExp
-        AddExp(expNode.getAddExpNode());
+        AddExp(expNode.getAddExpNode(), isConst);
     }
 
-    private void ConstDecl(ConstDeclNode constDeclNode) {
+    private void ConstDecl(ConstDeclNode constDeclNode, boolean isGlobal) {
         // ConstDecl → 'const' BType ConstDef { ',' ConstDef } ';'
-        BType(constDeclNode.getbTypeNode());
+        Type type = BType(constDeclNode.getbTypeNode());
         for (ConstDefNode constDefNode : constDeclNode.getConstDefNodes()) {
-            ConstDef(constDefNode);
+            ConstDef(constDefNode, type, isGlobal);
         }
     }
 
-    private void ConstDef(ConstDefNode constDefNode) {
+    private void ConstDef(ConstDefNode constDefNode, Type type, boolean isGlobal) {
         // ConstDef → Ident [ '[' ConstExp ']' ] '=' ConstInitVal
         String name = constDefNode.getIdent().getContent();
         if (constDefNode.getConstExpNode() == null) {
             //非数组
-            ConstInitVal(constDefNode.getConstInitValNode());//将saveValue赋值
-            if (tmpType == IntegerType.i32) {
+            ConstInitVal(constDefNode.getConstInitValNode(), type, null, null, isGlobal);//将saveValue赋值
+            if (type == IntegerType.i32) {
                 tmpValue = buildFactory.getConstInt(saveValue == null ? 0 : saveValue);//将常量包装成constInt
             } else {
                 tmpValue = buildFactory.getConstChar(saveValue == null ? '\0' : saveValue);//将常量包装成constChar
@@ -689,30 +653,29 @@ public class IRGenerator {
             cur.addConstValue(name, saveValue);
             if (isGlobal) {
                 //包装成globalVar，加入表
-                tmpValue = buildFactory.buildGlobalVar(name, tmpType, tmpValue, true, false);
+                tmpValue = buildFactory.buildGlobalVar(name, type, tmpValue, true, false);
                 cur.addValue(name, tmpValue);
             } else {
-                tmpValue = buildFactory.buildVar(curBlock, tmpValue, true, tmpType);
+                tmpValue = buildFactory.buildVar(curBlock, tmpValue, true, type);
                 cur.addValue(name, tmpValue);
             }
         } else {
             //数组
             ConstExp(constDefNode.getConstExpNode());//给saveValue赋值
-            Type type = buildFactory.getArrayType(tmpType, saveValue);
+            Type tmpType = buildFactory.getArrayType(type, saveValue);
             if (isGlobal) {
-                tmpValue = buildFactory.buildGlobalArray(name, type, true, false);
+                tmpValue = buildFactory.buildGlobalArray(name, tmpType, true, false);
                 ((ConstArray) ((GlobalVar) tmpValue).getValue()).setInit(true);
             } else {
-                tmpValue = buildFactory.buildArray(curBlock, true, type);
+                tmpValue = buildFactory.buildArray(curBlock, true, tmpType);
             }
             cur.addValue(name, tmpValue);
-            curArray = tmpValue;
-            tmpName = name;
-            ConstInitVal(constDefNode.getConstInitValNode());
+            Value curArray = tmpValue;
+            ConstInitVal(constDefNode.getConstInitValNode(), type, name, curArray, isGlobal);
         }
     }
 
-    private void ConstInitVal(ConstInitValNode constInitValNode) {
+    private void ConstInitVal(ConstInitValNode constInitValNode, Type type, String name, Value curArray, boolean isGlobal) {
         // ConstInitVal → ConstExp | '{' [ ConstExp { ',' ConstExp } ] '}' | StringConst
         if (constInitValNode.getConstExp() != null) {
             ConstExp(constInitValNode.getConstExp());
@@ -727,16 +690,16 @@ public class IRGenerator {
                 } else {
                     buildFactory.buildStore(curBlock, buildFactory.buildGEP(curBlock, curArray, i), tmpValue);
                 }
-                StringBuilder name = new StringBuilder(tmpName);
-                name.append(";").append(i);//比如arr[1]就是arr;1
-                cur.addConstValue(name.toString(), saveValue);
+                StringBuilder tmpName = new StringBuilder(name);
+                tmpName.append(";").append(i);//比如arr[1]就是arr;1
+                cur.addConstValue(tmpName.toString(), saveValue);
             }
         } else {
             int tmpOffset = 0;
             for (ConstExpNode constExpNode : constInitValNode.getConstExpNodes()) {
                 tmpValue = null;
                 ConstExp(constExpNode);//返回值在saveValue中
-                tmpValue = tmpType == IntegerType.i32 ? buildFactory.getConstInt(saveValue) : buildFactory.getConstChar(saveValue);
+                tmpValue = type == IntegerType.i32 ? buildFactory.getConstInt(saveValue) : buildFactory.getConstChar(saveValue);
                 if (isGlobal) {
                     //如果是全局数组，直接保存值
                     buildFactory.buildInitArray(curArray, tmpOffset, tmpValue);
@@ -744,9 +707,9 @@ public class IRGenerator {
                     //计算数组元素地址，保存值
                     buildFactory.buildStore(curBlock, buildFactory.buildGEP(curBlock, curArray, tmpOffset), tmpValue);
                 }
-                StringBuilder name = new StringBuilder(tmpName);
-                name.append(";").append(tmpOffset);//比如arr[1]就是arr;1
-                cur.addConstValue(name.toString(), saveValue);
+                StringBuilder tmpName = new StringBuilder(name);
+                tmpName.append(";").append(tmpOffset);//比如arr[1]就是arr;1
+                cur.addConstValue(tmpName.toString(), saveValue);
                 tmpOffset++;
             }
         }
@@ -754,24 +717,22 @@ public class IRGenerator {
 
     private void ConstExp(ConstExpNode constExp) {
         //ConstExp → AddExp
-        isConst = true;
         saveValue = null;
-        AddExp(constExp.getAddExpNode());
-        isConst = false;
+        AddExp(constExp.getAddExpNode(), true);
     }
 
-    private void AddExp(AddExpNode addExpNode) {
+    private void AddExp(AddExpNode addExpNode, boolean isConst) {
         //AddExp -> MulExp [('+' | '-') AddExp]
         if (isConst) {
             saveValue = null;
-            MulExp(addExpNode.getMulExpNode());
+            MulExp(addExpNode.getMulExpNode(), true);
             Integer result = saveValue;
             AddExpNode curAddExpNode = addExpNode;
             while (curAddExpNode.getAddExpNode() != null) {
                 TokenType op = curAddExpNode.getOpType();
                 curAddExpNode = curAddExpNode.getAddExpNode();
                 saveValue = null;
-                MulExp(curAddExpNode.getMulExpNode());
+                MulExp(curAddExpNode.getMulExpNode(), true);
                 if (op == TokenType.PLUS) {
                     result = result + saveValue;
                 } else {
@@ -781,14 +742,14 @@ public class IRGenerator {
             saveValue = result;
         } else {
             tmpValue = null;
-            MulExp(addExpNode.getMulExpNode());
+            MulExp(addExpNode.getMulExpNode(), false);
             Value leftValue = tmpValue;
             AddExpNode curAddExpNode = addExpNode;
             while (curAddExpNode.getAddExpNode() != null) {
                 TokenType op = curAddExpNode.getOpType();
                 curAddExpNode = curAddExpNode.getAddExpNode();
                 tmpValue = null;
-                MulExp(curAddExpNode.getMulExpNode());
+                MulExp(curAddExpNode.getMulExpNode(), false);
                 Value rightValue = tmpValue;
                 if (op == TokenType.PLUS) {
                     leftValue = buildFactory.buildBinary(curBlock, Operator.Add, leftValue, rightValue);
@@ -800,18 +761,18 @@ public class IRGenerator {
         }
     }
 
-    private void MulExp(MulExpNode mulExpNode) {
+    private void MulExp(MulExpNode mulExpNode, boolean isConst) {
         //MulExp → UnaryExp [('*' | '/' | '%') MulExp]
         if (isConst) {
             saveValue = null;
-            UnaryExp(mulExpNode.getUnaryExpNode());
+            UnaryExp(mulExpNode.getUnaryExpNode(), true);
             Integer result = saveValue;
             MulExpNode curMulExpNode = mulExpNode;
             while (curMulExpNode.getMulExpNode() != null) {
                 TokenType op = curMulExpNode.getOpType();
                 curMulExpNode = curMulExpNode.getMulExpNode();
                 saveValue = null;
-                UnaryExp(curMulExpNode.getUnaryExpNode());
+                UnaryExp(curMulExpNode.getUnaryExpNode(), true);
                 if (op == TokenType.MULT) {
                     result = result * saveValue;
                 } else if (op == TokenType.DIV) {
@@ -823,14 +784,14 @@ public class IRGenerator {
             saveValue = result;
         } else {
             tmpValue = null;
-            UnaryExp(mulExpNode.getUnaryExpNode());
+            UnaryExp(mulExpNode.getUnaryExpNode(), false);
             Value leftValue = tmpValue;
             MulExpNode curMulExpNode = mulExpNode;
             while (curMulExpNode.getMulExpNode() != null) {
                 TokenType op = curMulExpNode.getOpType();
                 curMulExpNode = curMulExpNode.getMulExpNode();
                 tmpValue = null;
-                UnaryExp(curMulExpNode.getUnaryExpNode());
+                UnaryExp(curMulExpNode.getUnaryExpNode(), false);
                 Value rightValue = tmpValue;
                 if (op == TokenType.MULT) {
                     leftValue = buildFactory.buildBinary(curBlock, Operator.Mul, leftValue, rightValue);
@@ -844,10 +805,10 @@ public class IRGenerator {
         }
     }
 
-    private void UnaryExp(UnaryExpNode unaryExpNode) {
+    private void UnaryExp(UnaryExpNode unaryExpNode, boolean isConst) {
         // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' | UnaryOp UnaryExp
         if (unaryExpNode.getPrimaryExpNode() != null) {
-            PrimaryExp(unaryExpNode.getPrimaryExpNode());
+            PrimaryExp(unaryExpNode.getPrimaryExpNode(), isConst);
         } else if (unaryExpNode.getIdent() != null) {
             String name = unaryExpNode.getIdent().getContent();
             Function function = (Function) cur.getValueDeep(name);
@@ -859,16 +820,16 @@ public class IRGenerator {
         } else {
             TokenType op = unaryExpNode.getUnaryOpType();
             if (op == TokenType.PLUS) {
-                UnaryExp(unaryExpNode.getUnaryExpNode());
+                UnaryExp(unaryExpNode.getUnaryExpNode(), isConst);
             } else if (op == TokenType.MINU) {
-                UnaryExp(unaryExpNode.getUnaryExpNode());
+                UnaryExp(unaryExpNode.getUnaryExpNode(), isConst);
                 if (isConst) {
                     saveValue = -saveValue;
                 } else {
                     tmpValue = buildFactory.buildBinary(curBlock, Operator.Sub, ConstInt.ZERO, tmpValue);
                 }
             } else {
-                UnaryExp(unaryExpNode.getUnaryExpNode());
+                UnaryExp(unaryExpNode.getUnaryExpNode(), isConst);
                 tmpValue = buildFactory.buildNot(curBlock, tmpValue);
             }
         }
@@ -878,36 +839,36 @@ public class IRGenerator {
         // FuncRParams → Exp { ',' Exp }
         for (ExpNode expNode : funcRParamsNode.getExpNodes()) {
             tmpValue = null;
-            Exp(expNode);
+            Exp(expNode, false);
             argList.add(tmpValue);
         }
     }
 
-    private void PrimaryExp(PrimaryExpNode primaryExpNode) {
+    private void PrimaryExp(PrimaryExpNode primaryExpNode, boolean isConst) {
         // PrimaryExp → '(' Exp ')' | LVal | Number | Character
         if (primaryExpNode.getExpNode() != null) {
-            Exp(primaryExpNode.getExpNode());
+            Exp(primaryExpNode.getExpNode(), isConst);
         } else if (primaryExpNode.getlValNode() != null) {
             needLoad = true;
-            LVal(primaryExpNode.getlValNode());
+            LVal(primaryExpNode.getlValNode(), isConst);
             if (needLoad) {
                 tmpValue = buildFactory.buildLoad(curBlock, tmpValue);
             }
         } else if (primaryExpNode.getNumberNode() != null) {
-            Number(primaryExpNode.getNumberNode());
+            Number(primaryExpNode.getNumberNode(), isConst);
         } else {
-            Character(primaryExpNode.getCharacterNode());
+            Character(primaryExpNode.getCharacterNode(), isConst);
         }
     }
 
-    private void LVal(LValNode lValNode) {
+    private void LVal(LValNode lValNode, boolean isConst) {
         // LVal → Ident ['[' Exp ']']
         //除了常量统一返回地址
         if (isConst) {
             StringBuilder name = new StringBuilder(lValNode.getIdent().getContent());
             if (lValNode.getExpNode() != null) {
                 saveValue = null;
-                Exp(lValNode.getExpNode());
+                Exp(lValNode.getExpNode(), true);
                 name.append(";").append(saveValue == null ? 0 : saveValue);
             }
             saveValue = cur.getConstDeep(name.toString());
@@ -917,7 +878,7 @@ public class IRGenerator {
             Value addr = cur.getValueDeep(name);
             if (lValNode.getExpNode() != null) {
                 tmpValue = null;
-                Exp(lValNode.getExpNode());
+                Exp(lValNode.getExpNode(), false);
                 if (addr.getType() instanceof PointerType) {
                     Type type = ((PointerType) addr.getType()).getTargetType();
                     if (type instanceof ArrayType) {
@@ -941,7 +902,7 @@ public class IRGenerator {
         }
     }
 
-    private void Number(NumberNode numberNode) {
+    private void Number(NumberNode numberNode, boolean isConst) {
         if (isConst) {
             saveValue = numberNode.getNumber();
         } else {
@@ -949,7 +910,7 @@ public class IRGenerator {
         }
     }
 
-    private void Character(CharacterNode characterNode) {
+    private void Character(CharacterNode characterNode, boolean isConst) {
         if (isConst) {
             saveValue = characterNode.getChar() - '\0';
         } else {
@@ -957,11 +918,11 @@ public class IRGenerator {
         }
     }
 
-    private void BType(BTypeNode bTypeNode) {
+    private Type BType(BTypeNode bTypeNode) {
         if (bTypeNode.getToken().getType() == TokenType.INTTK) {
-            tmpType = IntegerType.i32;
+            return IntegerType.i32;
         } else {
-            tmpType = IntegerType.i8;
+            return IntegerType.i8;
         }
     }
 }
