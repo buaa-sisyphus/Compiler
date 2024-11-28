@@ -17,22 +17,19 @@ public class BuildFactory {
         return buildFactory;
     }
 
-    /**
-     * Functions
-     **/
-    public Function buildFunction(String name, Type ret, List<Type> parametersTypes) {
-        Function function = new Function(name, new FunctionType(ret, parametersTypes), false);
-        IRModule.getInstance().addFunction(function);
-        return function;
-    }
-
     public Function buildLibraryFunction(String name, Type ret, List<Type> parametersTypes) {
         Function function = new Function(name, new FunctionType(ret, parametersTypes), true);
         IRModule.getInstance().addFunction(function);
         return function;
     }
 
-    public List<Argument> getFunctionArguments(Function function) {
+    public Function buildFunction(String name, Type ret, List<Type> parametersTypes) {
+        Function function = new Function(name, new FunctionType(ret, parametersTypes), false);
+        IRModule.getInstance().addFunction(function);
+        return function;
+    }
+
+    public List<Argument> buildFunctionArguments(Function function) {
         return function.getArguments();
     }
 
@@ -61,18 +58,18 @@ public class BuildFactory {
         return callInst;
     }
 
-    /**
-     * BasicBlock
-     */
     public BasicBlock buildBasicBlock(Function function) {
         BasicBlock block = new BasicBlock(function);
         function.addBlock(block);
         return block;
     }
 
-    /**
-     * BinaryInst
-     **/
+    public BinaryInst buildNeZero(BasicBlock basicBlock, Value value) {
+        BinaryInst binaryInst = new BinaryInst(basicBlock, Operator.Ne, value, ConstInt.ZERO);
+        basicBlock.addInstruction(binaryInst);
+        return binaryInst;
+    }
+
     public BinaryInst buildBinary(BasicBlock basicBlock, Operator op, Value left, Value right) {
         Value newLeft = left;
         Value newRight = right;
@@ -87,19 +84,10 @@ public class BuildFactory {
         return binaryInst;
     }
 
-    public BinaryInst buildNeZero(BasicBlock basicBlock, Value value) {
-        BinaryInst binaryInst = new BinaryInst(basicBlock, Operator.Ne, value, ConstInt.ZERO);
-        basicBlock.addInstruction(binaryInst);
-        return binaryInst;
-    }
-
     public BinaryInst buildNot(BasicBlock basicBlock, Value value) {
         return buildBinary(basicBlock, Operator.Eq, value, ConstInt.ZERO);
     }
 
-    /**
-     * Var
-     */
     public GlobalVar buildGlobalVar(String name, Type type, Value value, boolean isConst, boolean isString) {
         GlobalVar var = new GlobalVar(name, type, value, isConst, isString);
         IRModule.getInstance().addGlobalVar(var);
@@ -125,21 +113,18 @@ public class BuildFactory {
         return allocaInst;
     }
 
-    public ConstInt getConstInt(int value) {
+    public ConstInt buildConstInt(int value) {
         return new ConstInt(value);
     }
 
-    public ConstChar getConstChar(int value) {
-        return new ConstChar(value);
-    }
-
-    public ConstString getConstString(String value) {
+    public ConstString buildConstString(String value) {
         return new ConstString(value);
     }
 
-    /**
-     * Array
-     */
+    public ConstChar buildConstChar(int value) {
+        return new ConstChar(value);
+    }
+
     public GlobalVar buildGlobalArray(String name, Type type, boolean isConst, boolean isString) {
         Value constArray = new ConstArray(type, ((ArrayType) type).getElementType(), ((ArrayType) type).getCapacity());
         GlobalVar var = new GlobalVar(name, type, constArray, isConst, isString);
@@ -161,17 +146,14 @@ public class BuildFactory {
         ((ConstArray) ((GlobalVar) array).getValue()).storeValue(value);
     }
 
-    public ArrayType getArrayType(Type elementType, int length) {
+    public ArrayType buildArrayType(Type elementType, int length) {
         return new ArrayType(elementType, length);
     }
 
-    public PointerType getPointerType(Type elementType) {
+    public PointerType buildPointerType(Type elementType) {
         return new PointerType(elementType);
     }
 
-    /**
-     * ConvInst
-     */
     public Value buildZext(BasicBlock basicBlock, Value value) {
         if (value instanceof ConstChar) {
             return new ConstInt(((ConstChar) value).getValue());
@@ -190,15 +172,6 @@ public class BuildFactory {
         return convInst;
     }
 
-    public BinaryInst buildConvToI1(Value val, BasicBlock basicBlock) {
-        BinaryInst binaryInst = new BinaryInst(basicBlock, Operator.Ne, val, getConstInt(0));
-        basicBlock.addInstruction(binaryInst);
-        return binaryInst;
-    }
-
-    /**
-     * MemInst
-     */
     public StoreInst buildStore(BasicBlock basicBlock, Value pointer, Value value) {
         Type targetType = ((PointerType) pointer.getType()).getTargetType();
         if (targetType == IntegerType.i32 && value.getType() == IntegerType.i8) {
@@ -224,12 +197,9 @@ public class BuildFactory {
     }
 
     public GEPInst buildGEP(BasicBlock basicBlock, Value pointer, int index) {
-        return buildGEP(basicBlock, pointer, getConstInt(index));
+        return buildGEP(basicBlock, pointer, buildConstInt(index));
     }
 
-    /**
-     * TerminatorInst
-     */
     public RetInst buildRet(BasicBlock basicBlock) {
         RetInst retInst = new RetInst(basicBlock);
         basicBlock.addInstruction(retInst);

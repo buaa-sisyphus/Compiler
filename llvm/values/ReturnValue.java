@@ -1,13 +1,13 @@
 package llvm.values;
 
-public class returnValue {
+public class ReturnValue {
     public int constValue;
     public Value value;
-    public returnValue(int constValue) {
+    public ReturnValue(int constValue) {
         this.constValue = constValue;
         this.value = null;
     }
-    public returnValue(Value value) {
+    public ReturnValue(Value value) {
         this.value = value;
     }
 }
