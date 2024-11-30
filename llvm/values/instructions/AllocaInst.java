@@ -1,11 +1,10 @@
 package llvm.values.instructions;
 
-import llvm.types.ArrayType;
 import llvm.types.PointerType;
 import llvm.types.Type;
 import llvm.values.BasicBlock;
 
-public class AllocaInst extends MemInst{
+public class AllocaInst extends Instruction {
     private boolean isConst;
     private Type allocaType;
 
@@ -26,10 +25,6 @@ public class AllocaInst extends MemInst{
 
     public Type getAllocaType() {
         return allocaType;
-    }
-
-    public void setAllocaType(Type allocaType) {
-        this.allocaType = allocaType;
     }
 
     @Override

@@ -24,8 +24,5 @@ public class User extends Value{
 
     public void addOperand(Value operand) {
         this.operands.add(operand);
-        if (operand != null) {
-            operand.addUse(new Use(operand, this, operands.size() - 1));
-        }
     }
 }

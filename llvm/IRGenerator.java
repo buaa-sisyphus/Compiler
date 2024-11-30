@@ -28,7 +28,6 @@ public class IRGenerator {
     private BasicBlock continueBlock = null;
     private BasicBlock curTrueBlock = null;
     private BasicBlock curFalseBlock = null;
-    private boolean needLoad = true;
 
     private void initTable() {
         root = new ValueTable();
@@ -824,9 +823,8 @@ public class IRGenerator {
         if (primaryExpNode.getExpNode() != null) {
             return Exp(primaryExpNode.getExpNode(), isConst);
         } else if (primaryExpNode.getlValNode() != null) {
-            needLoad = true;
             ReturnValue returnValue = LVal(primaryExpNode.getlValNode(), isConst);
-            if (needLoad) {
+            if (returnValue.needLoad) {
                 returnValue.value = buildFactory.buildLoad(curBlock, returnValue.value);
             }
             return returnValue;
@@ -847,7 +845,7 @@ public class IRGenerator {
                 name.append(";").append(exp);
             }
             ReturnValue returnValue = new ReturnValue(cur.getConstDeep(name.toString()));
-            needLoad = false;
+            returnValue.needLoad = false;
             return returnValue;
         } else {
             String name = lValNode.getIdent().getContent();
@@ -865,17 +863,21 @@ public class IRGenerator {
                         returnValue.value = buildFactory.buildGEP(curBlock, firstAddr, returnValue.value);
                     }
                 }
+                returnValue.needLoad = true;
                 return returnValue;
             } else {
                 Type type = ((PointerType) addr.getType()).getTargetType();
                 Value tmpValue = null;
+                boolean needLoad = true;
                 if (type instanceof ArrayType) {
                     tmpValue = buildFactory.buildGEP(curBlock, addr, 0);
                     needLoad = false;
                 } else {
                     tmpValue = addr;
                 }
-                return new ReturnValue(tmpValue);
+                ReturnValue returnValue = new ReturnValue(tmpValue);
+                returnValue.needLoad = needLoad;
+                return returnValue;
             }
         }
     }

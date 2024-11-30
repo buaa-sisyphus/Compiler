@@ -10,7 +10,7 @@ import llvm.values.Value;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CallInst extends TerminatorInst {
+public class CallInst extends Instruction {
 
     public CallInst(BasicBlock basicBlock, Function function, List<Value> arguments) {
         super(((FunctionType) function.getType()).getReturnType(), Operator.Call, basicBlock);
@@ -27,7 +27,7 @@ public class CallInst extends TerminatorInst {
         return (Function) this.getOperand(0);
     }
 
-    public List<Value> getArguments() {
+    public List<Value> getParams() {
         ArrayList<Value> values = new ArrayList<>();
         for (int i = 1; i < this.getOperands().size(); i++) {
             values.add(this.getOperand(i));

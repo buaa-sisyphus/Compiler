@@ -1,6 +1,7 @@
 package llvm.values;
 
 import llvm.IRModule;
+import llvm.types.IntegerType;
 import llvm.types.PointerType;
 import llvm.types.Type;
 
@@ -8,40 +9,38 @@ public class GlobalVar extends User {
     private boolean isConst; // 是否是常量
     private boolean isString;
     private Value value;
+    private String originalName;
 
     public GlobalVar(String name, Type type, Value value, boolean isConst, boolean isString) {
         super("@" + name, new PointerType(type));
         this.isConst = isConst;
         this.value = value;
         this.isString = isString;
+        this.originalName = name;
     }
 
     public boolean isConst() {
         return isConst;
     }
 
-    public void setConst(boolean aConst) {
-        isConst = aConst;
-    }
-
     public Value getValue() {
         return value;
     }
 
-    public void setValue(Value value) {
-        this.value = value;
+    public boolean isString() {
+        return isString;
     }
 
-    public boolean isString() {
-        return value instanceof ConstString;
+    public String getOriginalName() {
+        return originalName;
     }
 
     public boolean isInt() {
-        return value instanceof ConstInt;
+        return ((PointerType) getType()).getTargetType() == IntegerType.i32;
     }
 
-    public boolean isArray() {
-        return value instanceof ConstArray;
+    public boolean isChar() {
+        return ((PointerType) getType()).getTargetType() == IntegerType.i8;
     }
 
     @Override

@@ -7,7 +7,7 @@ import llvm.types.Type;
 import llvm.values.BasicBlock;
 import llvm.values.Value;
 
-public class GEPInst extends MemInst{
+public class GEPInst extends Instruction {
     private Type elementType;
 
     public GEPInst(BasicBlock basicBlock, Value pointer, Value index) {

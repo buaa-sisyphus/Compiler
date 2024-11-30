@@ -19,10 +19,6 @@ public class Instruction extends User {
         IRModule.getInstance().addInstruction(this);
     }
 
-    public int getHandler() {
-        return handler;
-    }
-
     public BasicBlock getBasicBlock() {
         return basicBlock;
     }

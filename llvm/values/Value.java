@@ -10,23 +10,29 @@ public class Value {
     private final IRModule module = IRModule.getInstance();
     private String name;
     private Type type;
-    private List<Use> usesList; // 使用了这个 Value 的 User 列表，这对应着 def-use 关系
+    private int id; // 全局唯一的id
     public static int REG_NUMBER = 0; // LLVM 中的寄存器编号
-    public static int STR_NUMBER = 0;
-    public static int LABEL_NUMBER = 0;
+    public static int STR_NUMBER = 0; // 全局字符串的编号
+    public static int LABEL_NUMBER = 0; // LLVM 中基本块的编号
+    public static int MIPS_ID = 0;
 
     public Value(String name, Type type) {
         this.name = name;
         this.type = type;
-        this.usesList = new ArrayList<>();
-    }
-
-    public IRModule getModule() {
-        return module;
+        this.id = MIPS_ID++;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getNameWithID() {
+        if (isNumber()) return getName();
+        else return id + "_" + getName();
+    }
+
+    public boolean isNumber() {
+        return name.matches("-?[0-9]+");
     }
 
     public void setName(String name) {
@@ -39,34 +45,6 @@ public class Value {
 
     public void setType(Type type) {
         this.type = type;
-    }
-
-    public List<Use> getUsesList() {
-        return usesList;
-    }
-
-    public void setUsesList(List<Use> usesList) {
-        this.usesList = usesList;
-    }
-
-    public void addUse(Use use) {
-        this.usesList.add(use);
-    }
-
-    public String getGlobalName() {
-        return name.replaceAll("@", "");
-    }
-
-    public boolean isNumber() {
-        return this instanceof ConstInt;
-    }
-
-    public int getNumber() {
-        return Integer.parseInt(name);
-    }
-
-    public boolean isGlobal() {
-        return name.startsWith("@");
     }
 
     @Override

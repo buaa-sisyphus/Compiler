@@ -4,7 +4,7 @@ import llvm.types.VoidType;
 import llvm.values.BasicBlock;
 import llvm.values.Value;
 
-public class RetInst extends TerminatorInst {
+public class RetInst extends Instruction {
     public RetInst(BasicBlock basicBlock) {
         //无返回值
         super(VoidType.voidType, Operator.Ret, basicBlock);

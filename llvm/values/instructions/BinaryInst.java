@@ -77,6 +77,14 @@ public class BinaryInst extends Instruction {
         return this.getOperator() == Operator.Not;
     }
 
+    public Value getLeft() {
+        return this.getOperand(0);
+    }
+
+    public Value getRight() {
+        return this.getOperand(1);
+    }
+
     @Override
     public String toString() {
         String s = getName() + " = ";

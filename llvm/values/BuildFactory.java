@@ -29,10 +29,6 @@ public class BuildFactory {
         return function;
     }
 
-    public List<Argument> buildFunctionArguments(Function function) {
-        return function.getArguments();
-    }
-
     public Argument buildArgument(Type type, Function function, int index, boolean isLibraryFunction) {
         Argument argument = new Argument(type, index, function, isLibraryFunction);
         function.addArgument(argument);
@@ -94,6 +90,13 @@ public class BuildFactory {
         return var;
     }
 
+    public GlobalVar buildGlobalArray(String name, Type type, boolean isConst, boolean isString) {
+        Value constArray = new ConstArray(type, ((ArrayType) type).getElementType(), ((ArrayType) type).getCapacity());
+        GlobalVar var = new GlobalVar(name, type, constArray, isConst, isString);
+        IRModule.getInstance().addGlobalVar(var);
+        return var;
+    }
+
     public AllocaInst buildVar(BasicBlock basicBlock, Value value, boolean isConst, Type allocaType) {
         //先分配地址
         AllocaInst allocaInst = new AllocaInst(basicBlock, isConst, allocaType);
@@ -125,13 +128,6 @@ public class BuildFactory {
         return new ConstChar(value);
     }
 
-    public GlobalVar buildGlobalArray(String name, Type type, boolean isConst, boolean isString) {
-        Value constArray = new ConstArray(type, ((ArrayType) type).getElementType(), ((ArrayType) type).getCapacity());
-        GlobalVar var = new GlobalVar(name, type, constArray, isConst, isString);
-        IRModule.getInstance().addGlobalVar(var);
-        return var;
-    }
-
     public AllocaInst buildArray(BasicBlock basicBlock, boolean isConst, Type arrayType) {
         AllocaInst allocaInst = new AllocaInst(basicBlock, isConst, arrayType);
         basicBlock.addInstruction(allocaInst);
@@ -158,18 +154,18 @@ public class BuildFactory {
         if (value instanceof ConstChar) {
             return new ConstInt(((ConstChar) value).getValue());
         }
-        ConvInst convInst = new ConvInst(basicBlock, Operator.Zext, value);
-        basicBlock.addInstruction(convInst);
-        return convInst;
+        ZextInst zextInst = new ZextInst(basicBlock, Operator.Zext, value);
+        basicBlock.addInstruction(zextInst);
+        return zextInst;
     }
 
     public Value buildTrunc(BasicBlock basicBlock, Value value) {
         if (value instanceof ConstInt) {
             return new ConstChar(((ConstInt) value).getValue());
         }
-        ConvInst convInst = new ConvInst(basicBlock, Operator.Trunc, value);
-        basicBlock.addInstruction(convInst);
-        return convInst;
+        TruncInst truncInst = new TruncInst(basicBlock, Operator.Trunc, value);
+        basicBlock.addInstruction(truncInst);
+        return truncInst;
     }
 
     public StoreInst buildStore(BasicBlock basicBlock, Value pointer, Value value) {

@@ -3,7 +3,7 @@ package llvm.values.instructions;
 import llvm.values.BasicBlock;
 import llvm.values.Value;
 
-public class StoreInst extends MemInst{
+public class StoreInst extends Instruction {
     public StoreInst(BasicBlock basicBlock, Value pointer, Value value) {
         super(value.getType(), Operator.Store, basicBlock);
         this.addOperand(value);

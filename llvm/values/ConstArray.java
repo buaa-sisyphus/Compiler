@@ -34,24 +34,12 @@ public class ConstArray extends Const {
         return elementType;
     }
 
-    public void setElementType(Type elementType) {
-        this.elementType = elementType;
-    }
-
     public List<Value> getArray() {
         return array;
     }
 
-    public void setArray(List<Value> array) {
-        this.array = array;
-    }
-
     public int getCapacity() {
         return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
     }
 
     public boolean isInit() {
@@ -85,6 +73,11 @@ public class ConstArray extends Const {
             }
         }
         return true;
+    }
+
+    public ConstString getConstString() {
+        if (isString) return (ConstString) array.get(0);
+        else return null;
     }
 
     @Override

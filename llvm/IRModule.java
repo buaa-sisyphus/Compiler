@@ -34,6 +34,18 @@ public class IRModule {
         instructions.add(i);
     }
 
+    public List<Instruction> getInstructions() {
+        return instructions;
+    }
+
+    public List<Function> getFunctions() {
+        return functions;
+    }
+
+    public List<GlobalVar> getGlobals() {
+        return globals;
+    }
+
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
