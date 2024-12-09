@@ -1,7 +1,7 @@
 package llvm.types;
 
 public class PointerType implements Type{
-    private final Type targetType;
+    private Type targetType;
 
     public PointerType(Type targetType) {
         this.targetType = targetType;

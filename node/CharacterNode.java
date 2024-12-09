@@ -21,7 +21,7 @@ public class CharacterNode extends Node {
         IOUtils.writeSymbol(typeToString());
     }
 
-    private static final Map<String, Character> ESCAPE_CHAR_MAP = new HashMap<>() {{
+    public static final Map<String, Character> ESCAPE_CHAR_MAP = new HashMap<>() {{
         put("\\a", '\u0007');
         put("\\b", '\b');
         put("\\t", '\t');

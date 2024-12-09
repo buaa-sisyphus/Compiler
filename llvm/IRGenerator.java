@@ -576,7 +576,7 @@ public class IRGenerator {
             return Exp(initValNode.getExpNode(), isConst);
         } else if (initValNode.getStringConst() != null) {
             //去除原来保存的双引号，给末尾加上\0
-            String str = initValNode.getStringContent() + "\0";
+            String str = initValNode.getStringContent() + '\0';
             char[] chars = str.toCharArray();
             for (int i = 0; i < chars.length; i++) {
                 Value tmpValue = buildFactory.buildConstChar(chars[i]);

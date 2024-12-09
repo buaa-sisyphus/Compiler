@@ -1,3 +1,4 @@
+import backend.MIPSGenerator;
 import error.ErrorHandler;
 import frontend.Visitor;
 import frontend.Lexer;
@@ -15,6 +16,7 @@ public class Compiler {
         IOUtils.empty("error.txt");
         IOUtils.empty("symbol.txt");
         IOUtils.empty("llvm_ir.txt");
+        IOUtils.empty("mips.txt");
         ErrorHandler handler = ErrorHandler.getInstance();
         Lexer lexer = Lexer.getLexer();
         lexer.analyze();
@@ -26,7 +28,9 @@ public class Compiler {
             IRGenerator irGenerator = IRGenerator.getInstance();
             irGenerator.CompUnit(parser.getCompUnitNode());
             IRModule irModule = IRModule.getInstance();
-            IOUtils.writeLLVM(irModule.toString());
+//            IOUtils.writeLLVM(irModule.toString());
+            MIPSGenerator mipsGenerator = MIPSGenerator.getInstance();
+            IOUtils.writeMIPS(mipsGenerator.generateMIPS(irModule));
         } else IOUtils.writeErrors(handler.getErrors());
     }
 }

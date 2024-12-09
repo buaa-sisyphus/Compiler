@@ -28,7 +28,9 @@ public class Value {
 
     public String getNameWithID() {
         if (isNumber()) return getName();
-        else return id + "_" + getName();
+        else if (this instanceof Function) return getName();
+        else if (this instanceof GlobalVar) return ((GlobalVar) this).getOriginalName();
+        else return getName() + "_" + +id;
     }
 
     public boolean isNumber() {

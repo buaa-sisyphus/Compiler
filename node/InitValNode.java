@@ -4,6 +4,9 @@ import token.Token;
 import utils.IOUtils;
 
 import java.util.List;
+import java.util.Map;
+
+import static node.CharacterNode.ESCAPE_CHAR_MAP;
 
 // InitVal → Exp | '{' [ Exp { ',' Exp } ] '}' | StringConst
 public class InitValNode extends Node {
@@ -43,7 +46,7 @@ public class InitValNode extends Node {
             if (!expNodes.isEmpty()) {
                 expNodes.get(0).print();
                 for (int i = 1; i < expNodes.size(); i++) {
-                    IOUtils.writeSymbol(commaTokens.get(i-1).toString());
+                    IOUtils.writeSymbol(commaTokens.get(i - 1).toString());
                     expNodes.get(i).print();
                 }
             }
@@ -60,8 +63,12 @@ public class InitValNode extends Node {
         return stringConst;
     }
 
-    public String getStringContent(){
-        return stringConst.getContent().replace("\"","");
+    public String getStringContent() {
+        String tmp = stringConst.getContent().replace("\"", "");
+        for (Map.Entry<String, Character> entry : ESCAPE_CHAR_MAP.entrySet()) {
+            tmp = tmp.replace(entry.getKey(), entry.getValue().toString());
+        }
+        return tmp;
     }
 
     public List<ExpNode> getExpNodes() {

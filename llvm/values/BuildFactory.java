@@ -69,10 +69,10 @@ public class BuildFactory {
     public BinaryInst buildBinary(BasicBlock basicBlock, Operator op, Value left, Value right) {
         Value newLeft = left;
         Value newRight = right;
-        if (left.getType() == IntegerType.i8 || left.getType() == IntegerType.i1) {
+        if (left.getType() == IntegerType.i8) {
             newLeft = buildZext(basicBlock, left);
         }
-        if (right.getType() == IntegerType.i8 || right.getType() == IntegerType.i1) {
+        if (right.getType() == IntegerType.i8) {
             newRight = buildZext(basicBlock, right);
         }
         BinaryInst binaryInst = new BinaryInst(basicBlock, op, newLeft, newRight);
@@ -91,7 +91,7 @@ public class BuildFactory {
     }
 
     public GlobalVar buildGlobalArray(String name, Type type, boolean isConst, boolean isString) {
-        Value constArray = new ConstArray(type, ((ArrayType) type).getElementType(), ((ArrayType) type).getCapacity());
+        Value constArray = new ConstArray(type, ((ArrayType) type).getElementType(), ((ArrayType) type).getLength());
         GlobalVar var = new GlobalVar(name, type, constArray, isConst, isString);
         IRModule.getInstance().addGlobalVar(var);
         return var;

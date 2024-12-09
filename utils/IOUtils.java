@@ -75,7 +75,19 @@ public class IOUtils {
         try {
             fw = new FileWriter(outputFile, true);
             fw.write(content);
-            fw.flush();
+            fw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void writeMIPS(String content) {
+        File outputFile = new File("mips.txt");
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(outputFile, true);
+            fw.write(content);
+            fw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

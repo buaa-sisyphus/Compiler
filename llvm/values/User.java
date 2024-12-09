@@ -7,7 +7,7 @@ import java.util.List;
 
 public class User extends Value{
 
-    private final List<Value> operands;
+    private List<Value> operands;
 
     public User(String name, Type type) {
         super(name, type);

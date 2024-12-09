@@ -25,15 +25,8 @@ public class FunctionType implements Type{
         return parametersType;
     }
 
-    public void setParametersType(List<Type> parametersType) {
-        this.parametersType = parametersType;
-    }
-
     public Type getReturnType() {
         return returnType;
     }
 
-    public void setReturnType(Type returnType) {
-        this.returnType = returnType;
-    }
 }

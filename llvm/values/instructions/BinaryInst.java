@@ -11,9 +11,6 @@ public class BinaryInst extends Instruction {
         this.addOperand(left);
         this.addOperand(right);
         this.setType(left.getType());
-        if (isCond()) {
-            this.setType(IntegerType.i1);
-        }
         this.setName("%var_" + REG_NUMBER++);
     }
 
@@ -35,14 +32,6 @@ public class BinaryInst extends Instruction {
 
     public boolean isMod() {
         return this.getOperator() == Operator.Mod;
-    }
-
-    public boolean isAnd() {
-        return this.getOperator() == Operator.And;
-    }
-
-    public boolean isOr() {
-        return this.getOperator() == Operator.Or;
     }
 
     public boolean isLt() {
@@ -67,10 +56,6 @@ public class BinaryInst extends Instruction {
 
     public boolean isNe() {
         return this.getOperator() == Operator.Ne;
-    }
-
-    public boolean isCond() {
-        return this.isLt() || this.isLe() || this.isGe() || this.isGt() || this.isEq() || this.isNe();
     }
 
     public boolean isNot() {

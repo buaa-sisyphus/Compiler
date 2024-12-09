@@ -23,7 +23,9 @@ public class GEPInst extends Instruction {
     }
 
     public Value getIndex() {
-        return getOperands().get(1);
+        if (getOperands().size() > 1)
+            return getOperands().get(1);
+        else return null;
     }
 
     private static Type getElementType(Value pointer) {
@@ -32,7 +34,7 @@ public class GEPInst extends Instruction {
             Type targetType = ((PointerType) type).getTargetType();
             if (targetType instanceof ArrayType) {
                 return ((ArrayType) targetType).getElementType();
-            }else if(targetType instanceof IntegerType) {
+            } else if (targetType instanceof IntegerType) {
                 return targetType;
             }
         }
@@ -46,13 +48,13 @@ public class GEPInst extends Instruction {
         Value pointer = getPointer();
         Value index = getIndex();
         s.append(getName()).append(" = getelementptr inbounds ");
-        s.append(((PointerType)pointer.getType()).getTargetType()).append(", ");
+        s.append(((PointerType) pointer.getType()).getTargetType()).append(", ");
         s.append(pointer.getType()).append(" ").append(pointer.getName()).append(", ");
 
-        if(((PointerType) pointer.getType()).getTargetType() instanceof ArrayType) {
+        if (((PointerType) pointer.getType()).getTargetType() instanceof ArrayType) {
             //一维数组指针，如[i8 x 8]*
             s.append("i32 0, ").append(index.getType()).append(" ").append(index.getName());
-        }else{
+        } else {
             //普通指针，如i8*
             s.append(index.getType()).append(" ").append(index.getName());
         }

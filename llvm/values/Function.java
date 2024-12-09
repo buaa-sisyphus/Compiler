@@ -31,10 +31,6 @@ public class Function extends Value {
         return arguments;
     }
 
-    public void setArguments(List<Argument> arguments) {
-        this.arguments = arguments;
-    }
-
     public boolean isLibraryFunction() {
         return isLibraryFunction;
     }
