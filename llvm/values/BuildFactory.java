@@ -69,10 +69,10 @@ public class BuildFactory {
     public BinaryInst buildBinary(BasicBlock basicBlock, Operator op, Value left, Value right) {
         Value newLeft = left;
         Value newRight = right;
-        if (left.getType() == IntegerType.i8) {
+        if (left.getType() == IntegerType.i8 || left.getType() == IntegerType.i1) {
             newLeft = buildZext(basicBlock, left);
         }
-        if (right.getType() == IntegerType.i8) {
+        if (right.getType() == IntegerType.i8 || right.getType() == IntegerType.i1) {
             newRight = buildZext(basicBlock, right);
         }
         BinaryInst binaryInst = new BinaryInst(basicBlock, op, newLeft, newRight);

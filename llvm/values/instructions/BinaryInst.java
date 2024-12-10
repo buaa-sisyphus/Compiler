@@ -11,7 +11,14 @@ public class BinaryInst extends Instruction {
         this.addOperand(left);
         this.addOperand(right);
         this.setType(left.getType());
+        if (isCond()) {
+            this.setType(IntegerType.i1);
+        }
         this.setName("%var_" + REG_NUMBER++);
+    }
+
+    public boolean isCond() {
+        return this.isLt() || this.isLe() || this.isGe() || this.isGt() || this.isEq() || this.isNe();
     }
 
     public boolean isAdd() {
