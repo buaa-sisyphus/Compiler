@@ -175,76 +175,118 @@ paeser.print();
 
 ```
 .
-│  Compiler.java
-│  config.json
-│  error.txt
-│  parser.txt
-|  symbol.txt
-│  README.md
-│  testfile.txt
-│
-├─error
-│      Error.java
-│      ErrorHandler.java
-│      ErrorType.java
-│
-├─frontend
-|	   Buider.java
-│      Lexer.java
-│      Parser.java
-│
-├─node
-│      AddExpNode.java
-│      BlockItemNode.java
-│      BlockNode.java
-│      BTypeNode.java
-│      CharacterNode.java
-│      CompUnitNode.java
-│      CondNode.java
-│      ConstDeclNode.java
-│      ConstDefNode.java
-│      ConstExpNode.java
-│      ConstInitValNode.java
-│      DeclNode.java
-│      EqExpNode.java
-│      ExpNode.java
-│      ForStmtNode.java
-│      FuncDefNode.java
-│      FuncFParamNode.java
-│      FuncFParamsNode.java
-│      FuncRParamsNode.java
-│      FuncTypeNode.java
-│      InitValNode.java
-│      LAndExpNode.java
-│      LOrExpNode.java
-│      LValNode.java
-│      MainFuncDefNode.java
-│      MulExpNode.java
-│      Node.java
-│      NodeType.java
-│      NumberNode.java
-│      PrimaryExpNode.java
-│      RelExpNode.java
-│      StmtNode.java
-│      UnaryExpNode.java
-│      UnaryOpNode.java
-│      VarDeclNode.java
-│      VarDefNode.java
-│
-├───symbol
-│       FuncParam.java
-│       FuncSymbol.java
-│       Symbol.java
-│       SymbolTable.java
-│       VarSymbol.java
+|   Compiler.java
+|   config.json
 |
-├─token
-│      Token.java
-│      TokenType.java
-│
-└─utils
++---backend
+|       MIPSGenerator.java
+|       StackSlot.java
+|
++---error
+|       Error.java
+|       ErrorHandler.java
+|       ErrorType.java
+|
++---frontend
+|       Lexer.java
+|       Parser.java
+|       Visitor.java
+|
++---llvm
+|   |   IRGenerator.java
+|   |   IRModule.java
+|   |
+|   +---types
+|   |       ArrayType.java
+|   |       FunctionType.java
+|   |       IntegerType.java
+|   |       LabelType.java
+|   |       PointerType.java
+|   |       Type.java
+|   |       VoidType.java
+|   |
+|   \---values
+|       |   Argument.java
+|       |   BasicBlock.java
+|       |   BuildFactory.java
+|       |   Const.java
+|       |   ConstArray.java
+|       |   ConstChar.java
+|       |   ConstInt.java
+|       |   ConstString.java
+|       |   Function.java
+|       |   GlobalVar.java
+|       |   ReturnValue.java
+|       |   User.java
+|       |   Value.java
+|       |   ValueTable.java
+|       |
+|       \---instructions
+|               AllocaInst.java
+|               BinaryInst.java
+|               BrInst.java
+|               CallInst.java
+|               GEPInst.java
+|               Instruction.java
+|               LoadInst.java
+|               Operator.java
+|               RetInst.java
+|               StoreInst.java
+|               TruncInst.java
+|               ZextInst.java
+|
++---node
+|       AddExpNode.java
+|       BlockItemNode.java
+|       BlockNode.java
+|       BTypeNode.java
+|       CharacterNode.java
+|       CompUnitNode.java
+|       CondNode.java
+|       ConstDeclNode.java
+|       ConstDefNode.java
+|       ConstExpNode.java
+|       ConstInitValNode.java
+|       DeclNode.java
+|       EqExpNode.java
+|       ExpNode.java
+|       ForStmtNode.java
+|       FuncDefNode.java
+|       FuncFParamNode.java
+|       FuncFParamsNode.java
+|       FuncRParamsNode.java
+|       FuncTypeNode.java
+|       InitValNode.java
+|       LAndExpNode.java
+|       LOrExpNode.java
+|       LValNode.java
+|       MainFuncDefNode.java
+|       MulExpNode.java
+|       Node.java
+|       NodeType.java
+|       NumberNode.java
+|       PrimaryExpNode.java
+|       RelExpNode.java
+|       StmtNode.java
+|       UnaryExpNode.java
+|       UnaryOpNode.java
+|       VarDeclNode.java
+|       VarDefNode.java
+|
++---symbol
+|       FuncParam.java
+|       FuncSymbol.java
+|       Symbol.java
+|       SymbolTable.java
+|       VarSymbol.java
+|
++---token
+|       Token.java
+|       TokenType.java
+|
+\---utils
+        CalUtils.java
         IOUtils.java
-
 
 ```
 
@@ -306,7 +348,7 @@ public class ErrorHandler {
 
 ## 4. 词法分析设计
 
-## 4.1 词法单元
+### 4.1 词法单元
 
 定义枚举类`TokenType`，表示单词类别码：
 
@@ -332,7 +374,7 @@ public class Token {
 }
 ```
 
-## 4.2 词法分析器实现
+### 4.2 词法分析器实现
 
 定义`Lexer`类，即词法分析器：
 
@@ -374,7 +416,7 @@ private static final Map<String, TokenType> keywords = new HashMap<>() {{ // 关
 
 ## 5. 语法分析设计
 
-## 5.1. 抽象语法树节点
+### 5.1. 抽象语法树节点
 
 新建文件夹`node`，先规定抽象语法树节点的类别，于是定义一个枚举类`NodeType`，包含了文法中每一种非终结符：
 
@@ -447,7 +489,7 @@ public class ConstDeclNode extends Node {
 }
 ```
 
-## 5.2. 关于左递归与回溯
+### 5.2. 关于左递归与回溯
 
 因为语法分析采用的是递归下降分析法，所以文法当中不能存在左递归，同时尽可能的避免回溯。
 
@@ -926,8 +968,409 @@ case Continue:
     break;
 ```
 
-
-
 ## 7. 代码生成设计
+
+### 7.1. 中间代码llvm ir生成
+
+<img src="D:\2221\大三\编译\llvm类图.png" alt="llvm类图" style="zoom:50%;" />
+
+在llvm中一切皆value，上图基本描述了llvm中类与类之间的关系。一个`Module`代表一个文件，一个`Module`又由多个`GlobalValue`组成......这样一层一层地往下拆解。所以我们建类的时候就基本按照这个图来即可。
+
+然后还有一个比较重要的就是`User`类。在这个图中，所有的指令类都是`User`的子类，可以用下面这个例子去理解：
+
+```llvm
+A: %add1 = add nsw i32 %a, %b
+B: %add2 = add nsw i32 %a, %b
+C: %sum  = add nsw i32 %add1, %add2
+```
+
+A是一条`Instruction`，它在代码中的体现就是 `%add1`，即指令的返回值。`%add1`或者说A这条指令是一个user，它可以使用操作数`%a`和`%b`；`%add2`是一个user，它可以使用操作数`%a`和`%b`。接着`%add1`和`%add2`又作为参数被`%sum`使用，通过这个user-use链，可以将指令与参数，指令与指令相互连接起来。
+
+#### 7.1.1.Type的设计
+
+llvm中的`Type`也是类似的。所有的类型都继承`Type`，像`i32`和`i8`，就是一种`IntergerType`；`i32*`和`i8*`就是`PointerType`。当然这个图里的类还不够完整，我还参考学长的设计添加了`ArrayType`等类型，如下：
+
+![我的Type](D:\2221\大三\编译\我的Type.png)
+
+* `LableType`就是标签类型，是基本块的类型。
+* `IntegerType`就是基本类型，`i32`或者`i8`。
+* `FunctionType`是函数类型，包含了函数的返回类型，和一个函数参数类型集合。
+* `ArrayType`是数组类型，包含的元素类型和数组长度。
+* `PointerType`是指针类型，包含指向的元素的类型，可能是`i8*`、`[i8 x 3]*`、还可能是`i8**`。	
+
+以`IntegerType`为例子：
+
+```java
+public class IntegerType implements Type {
+    private final int bit;
+
+    public static final IntegerType i8 = new IntegerType(8);
+
+    public static final IntegerType i32 = new IntegerType(32);
+
+    private IntegerType(int bit) {
+        this.bit = bit;
+    }
+
+    @Override
+    public String toString() {
+        return "i" + bit;
+    }
+}
+```
+
+`IntegerType`就只有一个属性，用来记录这个基本类型是8位还是32位的，最开始我也考虑过有1位的`i1`，就是对应`boolean`，但是后来发现没啥用，就删掉了。这里使用`static final`是因为变量的类型`i32`都是一样的，不需要每一个变量都新`new`一个`IntegerType`，不像`ArrayType`那样每一个数组类型都有不同的长度，需要建立不同的`ArrayType`对象。另一个原因是在判断这个类型是`i8`或者`i32`的时候方便一点，直接使用`== Interger.i32`，而不是`((IntegerType)type).isI32`，太丑了。
+
+#### 7.1.2.Value的设计
+
+建立完`Type`以及其子类后，就可以设计`Value`以及其子类了。首先当然是写出`Value`类了：
+
+```java
+public class Value {
+    private final IRModule module = IRModule.getInstance();
+    private String name;
+    private Type type;
+    private int id; // 全局唯一的id
+    public static int REG_NUMBER = 0; // LLVM 中的寄存器编号
+    public static int STR_NUMBER = 0; // 全局字符串的编号
+    public static int LABEL_NUMBER = 0; // LLVM 中基本块的编号
+    public static int MIPS_ID = 0;
+
+    public Value(String name, Type type) {
+        this.name = name;
+        this.type = type;
+        this.id = MIPS_ID++;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    ......
+
+    @Override
+    public String toString() {
+        return type.toString() + " " + name;
+    }
+}
+
+```
+
+* `name`：value的名字
+* `type`：value的类型
+* `id`：记录每一个`value`的唯一id，是在生成目标代码mips时会用到的
+* `REG_NUMBER`和`LABEL_NUMBER`是记录一个函数中变量号和基本块号的
+
+在进入一个新`Function`中时，`REG_NUMBER`和`LABEL_NUMBER`会重置为0。因为llvm中就是这么设计的，甚至llvm中变量和基本块编号是共用的。这里就要提及llvm中的数字编号，大号必须在小号后面使用，即：
+
+```
+...
+28:
+	%8 = add nsw i32 %6, %7
+```
+
+这种是不允许的，数字编号在处理`if`和`for`的时候有一点麻烦。但是使用字符串编号就不会关心这个，我原来用的数字编号，后面就改成字符串编号了，局部变量叫`%var_xxx`，基本块叫`%label_xxx`，全局字符串叫`@str_xxx`，其他的全局变量叫`@变量名`。顺便将变量编号和基本块编号区分开了。
+
+接着设计我认为第二重要的`user`类：
+
+```java
+public class User extends Value{
+
+    private List<Value> operands;
+
+    public User(String name, Type type) {
+        super(name, type);
+        this.operands = new ArrayList<>();
+    }
+
+    public List<Value> getOperands() {
+        return operands;
+    }
+
+    public Value getOperand(int index) {
+        return operands.get(index);
+    }
+
+    public void addOperand(Value operand) {
+        this.operands.add(operand);
+    }
+}
+
+```
+
+* `operands`：操作数集合，因为有些`user`的操作数有多个，所以搞成一个集合。
+
+下面是我类的设计架构：
+
+![我的Value](D:\2221\大三\编译\我的Value.png)
+
+* `BasicBlock`表示基本块，其`name`是`label_xxx`，其`type`是`LableType`类型，保存着`Instruction`指令集合和`belongFunction`所属函数。
+* `Function`表示函数，其`name`是函数名，其`type`是`FunctionType`类型。它保存着`BasicBlock`基本块集合，以及`Argument`参数集合。
+* `Argument`表示函数参数，其`name`是`%arg_xxx`。
+* `Const`是一个抽象类，表示数字、字符、字符串等。
+* `GlobalVar`表示全局变量或全局常量，其`name`为`@变量名`。
+* `Instruction`是一个抽象类，表示指令，其`name`为`%var_xxx`。
+
+![我的Instruction](D:\2221\大三\编译\我的Instruction.png)
+
+* 所有的指令都继承自`Instruction`，以上就是实验中会使用到的所有指令。`BinaryInst`是二元指令，加减乘除什么的。
+
+比较特殊的是，我还建了一个`ReturnValue`类。因为像`AddExp`这个规则对应的函数，有时候返回的是一个具体的`int`值，有时候返回一个`Value`类型的对象，还有时候需要返回其他一些综合属性，但是函数返回类型只能是一个，所以我就将这些返回信息全部保存在`ReturnValue`对象中一起返回。将属性都设置为`public`单纯是我比较懒。
+
+```java
+public class ReturnValue {
+    public int constValue;
+    public Value value;
+    public boolean needLoad = false;
+
+    public ReturnValue(int constValue) {
+        this.constValue = constValue;
+        this.value = null;
+    }
+
+    public ReturnValue(Value value) {
+        this.value = value;
+    }
+}
+```
+
+#### 7.1.3.LLVM IR生成器
+
+再来就是这里需要建立符号表，跟之前语义分析的符号表差不多，其实理解成定义域是更好的。有`valueTable`和`constTable`两个表，分别保存`value`和常量。一般情况下，键都指的是变量原本的名字，值就是其对应的Value。特别地，常量数组所有元素都保存在`constTable`中，键是`数组名;偏移量`，比如`arr[10]={1,2,3}`中`arr[0]`记录为`arr;0`。
+
+```java
+public class ValueTable {
+    private HashMap<String, Value> valueTable = new HashMap<>();
+    private HashMap<String, Integer> constTable = new HashMap<>();
+    private ValueTable parentTable;
+    private List<ValueTable> childrenTables = new ArrayList<>();
+
+    public ValueTable() {
+    }
+
+   ......
+
+}
+
+```
+
+上面这些都准备好后，就可以遍历语法树了。在遍历过程中，我们会频繁地创建Value，我的一个好友教我使用工厂模式，可以屏蔽一些操作细节，复用代码。所有的Value都在工厂中创建，以`buildStore`为例子：
+
+```java
+public StoreInst buildStore(BasicBlock basicBlock, Value pointer, Value value) {
+    Type targetType = ((PointerType) pointer.getType()).getTargetType();
+    if (targetType == IntegerType.i32 && value.getType() == IntegerType.i8) {
+        value = buildFactory.buildZext(basicBlock, value);
+    } else if (targetType == IntegerType.i8 && value.getType() == IntegerType.i32) {
+        value = buildFactory.buildTrunc(basicBlock, value);
+    }
+    StoreInst storeInst = new StoreInst(basicBlock, pointer, value);
+    basicBlock.addInstruction(storeInst);
+    return storeInst;
+}
+```
+
+这次实验会涉及大量类型转换，位扩展或者截断，比如在赋值时，你可能会把一个`i32`的value存到`i8*`的地址中。我们直接在`buildStore`中进行处理，那么就不需要每次赋值时都考虑类型转换，只要无脑`buildStore`就好，这样能避免某处遗漏了类型转换。
+
+说到遍历语法树，我认为`Stmt → 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt`还不太好写，我尝试记录一下我的思路。按照指导书的说法，这条规则可以改写为`Stmt → 'for' '(' [ForStmt1] ';' [Cond] ';' [ForStmt2] ')' Stmt (BasicBlock)`。
+
+1. 这个`forStmt1`是属于for语句前面那个基本块（就先叫`enterBlock`）的，所以先判断`forStmt1`存不存在，存在就调用相应的处理函数`ForStmt()`，将`forStmt1`中的指令全部加入基本块。
+2. 分别看`cond`和`forSTmt2`存不存在，存在就创建对应的基本块`condBlock`和`forStmtBlock`，不然就是`null`
+3. 循环体`stmt`肯定是存在的，创建一个`forBlock`表示循环体中的**第一个**基本块。还要为for循环结束后的跳转地创建一个`finalBlock`基本块。
+4. 然后就可以按照下图，调用相应的处理函数以及添加`BrInst`跳转指令了。
+   1. 如果`cond`存在，那就是`enterBlock->condBlock`。
+      1. 添加`enterBlock->condBlock`，让`curBlock=condBlock,curTureBlock=forBlock,curFalseBlock=finalBlock`，调用`Cond()`函数。该函数里面已经加上了到`forBlock`的跳转。
+   2. 反之就是添加`forStmt1->forBlock`。让`forEndBlock = finalBlock,curBlock = forBlock`，调用`Stmt()`函数。
+      1. 从`Stmt()`出来后，`curBlock`表示循环体内的**最后一个**基本块，我们要决定它跳转去哪
+      2. 如果`forStmt2`不为空，那就是添加`curBlock->forStmtBlock`
+      3. 反之，如果`cond`不为空，那就是添加`curBlock->condBlock`
+      4. 反之，就是添加`condBlock->forBlock`，跳转到循环体开头的第一个基本块
+   3. 如果`forStmt2`存在，修改`curBlock=forstmtBlock`，调用`ForStmt()`
+      1. 同样从`ForStmt()`出来后，要决定`curBlock`跳转到哪
+      2. 如果`cond`不为空，那就是添加`curBlock->condBlock`
+      3. 反之，添加`curBlock->forBlock`
+   4. 最后将`curBlock`设为`finalBlock`，结束循环
+   5. 考虑到有`continue`，所以还需要设置一下continue时要跳转的目的地
+
+写到这里时，我想到了其实不需要反复判断`cond`和`forStmt2`存不存在。可以直接给它们创建不为`null`的基本块，它们不存在时对应的是只有`br`语句的基本块，存在时对应的就是有其他语句和`br`语句的基本块。但这样有时候会相对多一些语句。
+
+<img src="D:\2221\大三\编译\for循环逻辑.png" alt="for循环逻辑" style="zoom: 33%;" />
+
+
+
+```java
+private BasicBlock forEndBlock = null;
+private BasicBlock curTrueBlock = null;
+private BasicBlock curFalseBlock = null;
+...
+case For:
+    //Stmt → 'for' '(' [ForStmt] ';' [Cond] ';' [ForStmt] ')' Stmt
+    BasicBlock basicBlock = curBlock;
+    if (stmtNode.getForStmtNodeFir() != null) {
+        ForStmt(stmtNode.getForStmtNodeFir());
+    }
+
+    BasicBlock condBlock = null;
+    if (stmtNode.getCondNode() != null) {
+        condBlock = buildFactory.buildBasicBlock(curFunction);
+    }
+    BasicBlock forStmtBlock = null;
+    if (stmtNode.getForStmtNodeSec() != null) {
+        forStmtBlock = buildFactory.buildBasicBlock(curFunction);
+    }
+    BasicBlock forBlock = buildFactory.buildBasicBlock(curFunction);
+    BasicBlock finalBlock = buildFactory.buildBasicBlock(curFunction);
+    buildFactory.buildBr(curBlock, condBlock == null ? forBlock : condBlock);
+    //设置continue
+	if (forStmtBlock != null) {
+        continueBlock = forStmtBlock;
+    } else if (condBlock != null) {
+        continueBlock = condBlock;
+    } else {
+        continueBlock = forBlock;
+    }
+    forEndBlock = finalBlock;
+    curBlock = forBlock;
+    Stmt(stmtNode.getStmtNode(), curFunction);
+
+    //进行到这里，curBlock是for循环体的最后一个语句块
+    if (forStmtBlock != null) {
+        buildFactory.buildBr(curBlock, forStmtBlock);
+    } else if (condBlock != null) {
+        buildFactory.buildBr(curBlock, condBlock);
+    } else {
+        buildFactory.buildBr(curBlock, forBlock);
+    }
+
+    if (stmtNode.getForStmtNodeSec() != null) {
+        curBlock = forStmtBlock;
+        ForStmt(stmtNode.getForStmtNodeSec());
+        buildFactory.buildBr(curBlock, condBlock == null ? forBlock : condBlock);
+    }
+    
+    curBlock = condBlock;
+    curTrueBlock = forBlock;
+    curFalseBlock = finalBlock;
+    if (stmtNode.getCondNode() != null) {
+        Cond(stmtNode.getCondNode(), curFunction);
+    }
+    curBlock = finalBlock;
+    break;
+```
+
+### 7.2. 目标代码mips生成
+
+llvm转mips其实不是很麻烦，只需要将每种llvm语句对应到若干条mips指令即可。
+
+在生成中间代码时，类型转化是一个比较折磨人的地方，但在生成mips时可以不需要区分byte和word，直接无脑当成word就完事了，就不需要考虑位对齐、用`lb`还是`lw`这些问题。
+
+有些数据要存到栈中，所以还需要为栈建一个数据结构。我这里是搞了一个`StackSlot`，表示栈中的一个4字节单元：
+
+```java
+public class StackSlot {
+    private int pos;
+    private Value value;
+
+    public StackSlot(int pos, Value value) {
+        this.pos = pos;
+        this.value = value;
+    }
+
+    public Value getValue() {
+        return value;
+    }
+
+    public int getPos() {
+        return pos;
+    }
+}
+```
+
+* `pos`：表示其在栈中的位置
+* `value`：这个单元对应的llvm中的虚拟寄存器
+
+然后栈是用的`private HashMap<String, StackSlot> stack = new HashMap<>();`，我给每一个value都规定了一个唯一的id，用这个id生成的键不会重复。因此感觉用`HashMap`比`ArrayList`好点，查找更方便。
+
+根据id生成键的规则如下：
+
+```java
+public String getName() {
+    return name;
+}
+public String getNameWithID() {
+    if (isNumber()) return getName();
+    else if (this instanceof Function) return getName();
+    else if (this instanceof GlobalVar) return ((GlobalVar) this).getOriginalName();//没@
+    else return getName() + "_" + +id;
+}
+```
+
+然后就是关于`$sp`指针申请栈空间的问题。需要申请一个8字节空间时，第一种是先将`$sp`自减8，然后使用`0($sp)`和`4($sp)`，偏移量是非负数；第二种是直接用负数偏移量`-4($sp)`和`-8($sp)`，只有当调用函数时才将`$sp`自减。
+
+第一种的麻烦点在于处理for循环时，每次新循环要将上次循环为临时变量申请的空间从栈弹出。比如在for循环前，有一个变量a，相对sp的偏移量为0。在循环体中每次都`int c=a+1`，生成mips就是
+
+```
+lw $t0,0($sp)
+subu $sp,$sp,4
+addu $t0,$t0,1
+sw $t0,0($sp)
+```
+
+第一次循环结束时如果不将c弹出，那么第二次循环再次取`0($sp)`时就不是a了。要知道一次循环中一共申请了多少临时空间，然后在一次循环要结束时弹出，好像有点麻烦。
+
+第二种的好处就是在sp除了调用函数外不会动。当然我也试过`$fp`和`$sp`配合使用，出了一些bug，不如只用sp方便。
+
+主要的生成mips函数`generateMIPS`如下：
+
+```
+public String generateMIPS(IRModule irModule) {
+    //.data
+    for (GlobalVar globalVar : irModule.getGlobals()) {
+        //处理全局变量
+    }
+    //.text
+    for (int i = 5; i < functions.size(); i++) {
+        //处理非库函数
+        for (int j = 0; j < 4 && j < argNum; j++) {
+            //保存在寄存器里的参数
+        }
+        for (int j = 4; j < argNum; j++) {
+            //保存在栈里的参数
+        }
+
+        for (int j = 0; j < basicBlocks.size(); j++) {
+            //遍历每一个基本块
+            for (int k = 0; k < instructions.size(); k++) {
+                //遍历每一条语句
+                if (instruction instanceof BinaryInst) {
+
+                } else if (instruction instanceof BrInst) {
+
+                } else if (instruction instanceof CallInst) {
+
+                } else if (instruction instanceof TruncInst) {
+
+                } else if (instruction instanceof ZextInst) {
+
+                } else if (instruction instanceof GEPInst) {
+
+                } else if (instruction instanceof LoadInst) {
+
+                } else if (instruction instanceof AllocaInst) {
+
+                } else if (instruction instanceof RetInst) {
+
+                } else if (instruction instanceof StoreInst) {
+
+                }
+            }
+        }
+    }
+
+    return sb.toString();
+}
+```
+
+然后为每一种llvm语句编写对应的翻译代码即可。数组相关的稍微麻烦一点点。
 
 ## 8. 代码优化设计

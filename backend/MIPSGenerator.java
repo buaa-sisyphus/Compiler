@@ -7,6 +7,7 @@ import llvm.values.instructions.*;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 public class MIPSGenerator {
     private static MIPSGenerator instance = new MIPSGenerator();
@@ -299,9 +300,12 @@ public class MIPSGenerator {
 
     private void translateZextInst(ZextInst inst) {
         //如果一开始就是用32位保存的，是不是就不需要扩展了，这个指令貌似没掉毛用?
-        push(4, inst);
-        load("$t0", inst.getOperand(0).getNameWithID());
-        store("$t0", inst.getNameWithID());
+//        push(4, inst);
+//        load("$t0", inst.getOperand(0).getNameWithID());
+//        store("$t0", inst.getNameWithID());
+        StackSlot tmp = stack.get(inst.getOperand(0).getNameWithID());
+        StackSlot stackSlot = new StackSlot(tmp.getPos(), inst);
+        stack.put(inst.getNameWithID(), stackSlot);
     }
 
     private void translateLoadInst(LoadInst inst) {
