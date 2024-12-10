@@ -3,6 +3,8 @@ package llvm.types;
 public class IntegerType implements Type {
     private final int bit;
 
+    public static final IntegerType i1 = new IntegerType(1);
+
     public static final IntegerType i8 = new IntegerType(8);
 
     public static final IntegerType i32 = new IntegerType(32);

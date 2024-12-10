@@ -266,9 +266,8 @@ public class IRGenerator {
                 if (stmtNode.getForStmtNodeSec() != null) {
                     curBlock = forStmtBlock;
                     ForStmt(stmtNode.getForStmtNodeSec());
+                    buildFactory.buildBr(curBlock, condBlock == null ? forBlock : condBlock);
                 }
-                buildFactory.buildBr(curBlock, condBlock == null ? forBlock : condBlock);
-
                 curBlock = condBlock;
                 curTrueBlock = forBlock;
                 curFalseBlock = finalBlock;
