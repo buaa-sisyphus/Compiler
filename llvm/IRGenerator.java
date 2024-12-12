@@ -19,8 +19,8 @@ public class IRGenerator {
         return instance;
     }
 
-    private ValueTable root;
-    private ValueTable cur;
+    private ValueScope root;
+    private ValueScope cur;
     private BasicBlock curBlock = null;
     private BuildFactory buildFactory;
 
@@ -30,20 +30,20 @@ public class IRGenerator {
     private BasicBlock curFalseBlock = null;
 
     private void initTable() {
-        root = new ValueTable();
+        root = new ValueScope();
         cur = root;
         buildFactory = BuildFactory.getInstance();
     }
 
     private void pushTable() {
-        ValueTable newTable = new ValueTable();
-        newTable.setParentTable(cur);
+        ValueScope newTable = new ValueScope();
+        newTable.setParent(cur);
         cur.addChild(newTable);
         cur = newTable;
     }
 
     private void popTable() {
-        cur = cur.getParentTable();
+        cur = cur.getParent();
     }
 
     private void addGlobalValue(String name, Value value) {

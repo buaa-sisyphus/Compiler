@@ -14,8 +14,8 @@ public class Visitor {
     private static final Visitor instance = new Visitor();
     public static int scope = 0;
     public static int loop = 0;//记录循环
-    private SymbolTable root;
-    private SymbolTable cur;
+    private SymbolScope root;
+    private SymbolScope cur;
 
     private Visitor() {
 
@@ -25,7 +25,7 @@ public class Visitor {
         return instance;
     }
 
-    public SymbolTable getRootTable() {
+    public SymbolScope getRootTable() {
         return root;
     }
 
@@ -35,9 +35,9 @@ public class Visitor {
 
     private void pushTable(boolean needReturn, boolean isFunc) {
         scope++;
-        SymbolTable newTable = new SymbolTable();
+        SymbolScope newTable = new SymbolScope();
         newTable.setScopeNum(scope);
-        newTable.setParentTable(cur);
+        newTable.setParent(cur);
         newTable.setFunc(isFunc);
         newTable.setNeedReturn(needReturn);
         cur.addChild(newTable);
@@ -45,20 +45,20 @@ public class Visitor {
     }
 
     private void popTable() {
-        cur = cur.getParentTable();
+        cur = cur.getParent();
     }
 
     private void initTable() {
         loop = 0;
         scope = 1;
-        root = new SymbolTable();
+        root = new SymbolScope();
         root.setScopeNum(scope);
         root.setNeedReturn(false);
         root.setFunc(false);
         cur = root;
     }
 
-    private boolean matchParams(List<FuncParam> params, List<ExpNode> expNodes, SymbolTable table) {
+    private boolean matchParams(List<FuncParam> params, List<ExpNode> expNodes, SymbolScope table) {
         for (int i = 0; i < params.size(); i++) {
             String paramType = params.get(i).toType();
             ExpNode expNode = expNodes.get(i);
@@ -162,11 +162,11 @@ public class Visitor {
             case Return:
                 // Stmt → 'return' [Exp] ';'
                 ExpNode expNode = stmtNode.getExpNode();
-                SymbolTable tmp = null;
+                SymbolScope tmp = null;
                 boolean flag = false;
                 if (expNode != null) {
                     //有返回值
-                    for (tmp = cur; tmp != null; tmp = tmp.getParentTable()) {
+                    for (tmp = cur; tmp != null; tmp = tmp.getParent()) {
                         //一直往上找，找到所属的函数
                         if (tmp.isFunc()) {
                             if (!tmp.getNeedReturn()) flag = true;

@@ -2,27 +2,27 @@ package symbol;
 
 import java.util.*;
 
-public class SymbolTable {
+public class SymbolScope {
     private Map<String, Symbol> symbolTable = new LinkedHashMap<>();
-    private List<SymbolTable> childrenTables = new ArrayList<>();
-    private SymbolTable parentTable;
+    private List<SymbolScope> children = new ArrayList<>();
+    private SymbolScope parent;
     private int scopeNum;
     private boolean needReturn = false;
     private boolean isFunc = false;
 
-    public SymbolTable() {
+    public SymbolScope() {
     }
 
-    public void setParentTable(SymbolTable parentTable) {
-        this.parentTable = parentTable;
+    public void setParent(SymbolScope parentTable) {
+        this.parent = parentTable;
     }
 
     public void addSymbol(String ident, Symbol symbol) {
         symbolTable.put(ident, symbol);
     }
 
-    public void addChild(SymbolTable child) {
-        childrenTables.add(child);
+    public void addChild(SymbolScope child) {
+        children.add(child);
     }
 
     public void setFunc(boolean func) {
@@ -39,7 +39,7 @@ public class SymbolTable {
 
     public Symbol getSymbolDeep(String ident) {
         Symbol symbol = null;
-        for (SymbolTable table = this; table != null; table = table.parentTable) {
+        for (SymbolScope table = this; table != null; table = table.parent) {
             symbol = table.getSymbol(ident);
             if (symbol != null) {
                 return symbol;
@@ -52,17 +52,18 @@ public class SymbolTable {
         return symbolTable.entrySet();
     }
 
-    public List<SymbolTable> getChildrenTables() {
-        return childrenTables;
+    public List<SymbolScope> getChildren() {
+        return children;
     }
 
-    public SymbolTable getParentTable() {
-        return parentTable;
+    public SymbolScope getParent() {
+        return parent;
     }
 
     public int getScopeNum() {
         return scopeNum;
     }
+
 
     public void setScopeNum(int scopeNum) {
         this.scopeNum = scopeNum;

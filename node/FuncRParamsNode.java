@@ -1,7 +1,5 @@
 package node;
 
-import symbol.FuncParam;
-import symbol.SymbolTable;
 import token.Token;
 import utils.IOUtils;
 

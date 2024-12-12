@@ -1,7 +1,7 @@
 package utils;
 
 import symbol.Symbol;
-import symbol.SymbolTable;
+import symbol.SymbolScope;
 import token.Token;
 import error.Error;
 
@@ -51,17 +51,17 @@ public class IOUtils {
         }
     }
 
-    public static void writeSymbol(SymbolTable symbolTable) {
+    public static void writeSymbol(SymbolScope symbolScope) {
         File outputFile = new File("symbol.txt");
         FileWriter fw = null;
         try {
             fw = new FileWriter(outputFile, true);
-            for (Map.Entry<String, Symbol> entry : symbolTable.entrySet()) {
+            for (Map.Entry<String, Symbol> entry : symbolScope.entrySet()) {
                 Symbol value = entry.getValue();
                 fw.write(value.toString());
             }
             fw.flush();
-            for (SymbolTable childTable : symbolTable.getChildrenTables()) {
+            for (SymbolScope childTable : symbolScope.getChildren()) {
                 writeSymbol(childTable);
             }
         } catch (IOException e) {

@@ -1,15 +1,12 @@
 package frontend;
 
 import error.ErrorHandler;
-import symbol.SymbolTable;
 import error.ErrorType;
 import node.*;
 import token.Token;
 import token.TokenType;
-import error.Error;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class Parser {

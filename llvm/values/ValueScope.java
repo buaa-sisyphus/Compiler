@@ -4,21 +4,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class ValueTable {
+public class ValueScope {
     private HashMap<String, Value> valueTable = new HashMap<>();
     private HashMap<String, Integer> constTable = new HashMap<>();
-    private ValueTable parentTable;
-    private List<ValueTable> childrenTables = new ArrayList<>();
+    private ValueScope parent;
+    private List<ValueScope> children = new ArrayList<>();
 
-    public ValueTable() {
+    public ValueScope() {
     }
 
-    public void setParentTable(ValueTable parentTable) {
-        this.parentTable = parentTable;
+    public void setParent(ValueScope parent) {
+        this.parent = parent;
     }
 
-    public void addChild(ValueTable childTable) {
-        childrenTables.add(childTable);
+    public void addChild(ValueScope childTable) {
+        children.add(childTable);
     }
 
     public void addValue(String name, Value value) {
@@ -35,7 +35,7 @@ public class ValueTable {
 
     public Value getValueDeep(String name) {
         Value value = null;
-        for (ValueTable table = this; table != null; table = table.parentTable) {
+        for (ValueScope table = this; table != null; table = table.parent) {
             value = table.getValue(name);
             if (value != null) {
                 return value;
@@ -53,7 +53,7 @@ public class ValueTable {
     }
 
     public Integer getConstDeep(String name) {
-        for (ValueTable table = this; table != null; table = table.parentTable) {
+        for (ValueScope table = this; table != null; table = table.parent) {
             Integer value = table.getConst(name);
             if (value != null) {
                 return value;
@@ -62,8 +62,8 @@ public class ValueTable {
         return null;
     }
 
-    public ValueTable getParentTable() {
-        return parentTable;
+    public ValueScope getParent() {
+        return parent;
     }
 
 }
