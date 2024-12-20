@@ -142,7 +142,7 @@ Pascal 编译器的文件组织比较紧凑，主要包含以下几大功能模�
 
 * `writeTokens(List<Token> tokens)`用于词法分析结果的输出
 * `write(String str)`用于输出字符串，主要用在语法分析结果的输出
-* `writeSymbol(SymbolTable symbolTable)`用于语义分析结果的输出
+* `writeSymbol(SymbolTable symbolScope)`用于语义分析结果的输出
 * `writeErrors(List<Error> errors)`用于错误信息的输出
 
 #### 2.2.2 词法分析接口
@@ -219,7 +219,7 @@ paeser.print();
 |       |   ReturnValue.java
 |       |   User.java
 |       |   Value.java
-|       |   ValueTable.java
+|       |   ValueScope.java
 |       |
 |       \---instructions
 |               AllocaInst.java
@@ -277,7 +277,7 @@ paeser.print();
 |       FuncParam.java
 |       FuncSymbol.java
 |       Symbol.java
-|       SymbolTable.java
+|       SymbolScope.java
 |       VarSymbol.java
 |
 +---token
@@ -682,36 +682,25 @@ public class FuncParam {
 * `values`是用来记录值的，但是目前还没使用
 * `params`是用来记录函数形参的
 
-符号表类`SymbolTable`定义：
+符号表类`SymbolScope`定义：
 
 ```java
-public class SymbolTable {
+public class SymbolScope {
     private Map<String, Symbol> symbolTable = new LinkedHashMap<>();
-    private List<SymbolTable> childrenTables = new ArrayList<>();
-    private SymbolTable parentTable;
+    private List<SymbolScope> children = new ArrayList<>();
+    private SymbolScope parent;
     private int scopeNum;
     private boolean needReturn = false;
     private boolean isFunc = false;
 
-    public void setParentTable(SymbolTable parentTable) {
-        this.parentTable = parentTable;
+    public SymbolScope() {
     }
 
-    public void addSymbol(String ident, Symbol symbol) {
-        symbolTable.put(ident, symbol);
-    }
-
-    public void addChild(SymbolTable child) {
-        childrenTables.add(child);
-    }
-
-    public Symbol getSymbol(String ident) {
-        return symbolTable.get(ident);
-    }
+   	....
 
     public Symbol getSymbolDeep(String ident) {
         Symbol symbol = null;
-        for (SymbolTable table = this; table != null; table = table.parentTable) {
+        for (SymbolScope table = this; table != null; table = table.parent) {
             symbol = table.getSymbol(ident);
             if (symbol != null) {
                 return symbol;
@@ -720,16 +709,16 @@ public class SymbolTable {
         return symbol;
     }
 
-   ...
+    ....
 }
 
 ```
 
-我使用的是树状符号表。一个符号表实例可以看作一个作用域。
+我使用的是树状符号表。一个SymbolScope实例可以看作一个作用域。
 
 * `symbolTable`：记录符号的Map，符号名为键，符号为值。因为输出要按照声明顺序，所以实际为`LinkedHashMap`
 * `childrenTables`：子作用域的符号表集合
-* `parentTable`：父作用域的符号表
+* `parent`：父作用域的符号表
 * `scopeNum`：作用域号数，相当于`id`
 * `isFunc`：用来记录这个符号表（作用域）是不是属于函数的。实际编码的时候发现需要加上这个属性，在后期错误处理需要用到
 * `needReturn`：如果这个符号表（作用域）是属于函数的，还需要记录这个函数是否需要返回值。实际编码的时候发现需要加上这个属性，在后期错误处理需要用到
@@ -1136,13 +1125,13 @@ public class ReturnValue {
 
 #### 7.1.3.LLVM IR生成器
 
-再来就是这里需要建立符号表，跟之前语义分析的符号表差不多，其实理解成定义域是更好的。有`valueTable`和`constTable`两个表，分别保存`value`和常量。一般情况下，键都指的是变量原本的名字，值就是其对应的Value。特别地，常量数组所有元素都保存在`constTable`中，键是`数组名;偏移量`，比如`arr[10]={1,2,3}`中`arr[0]`记录为`arr;0`。
+再来就是这里需要建立符号表。一个作用域域有`valueTable`和`constTable`两个表，分别保存`value`和常量。一般情况下，键都指的是变量原本的名字，值就是其对应的Value。特别地，常量数组所有元素都保存在`constTable`中，键是`数组名;偏移量`，比如`arr[10]={1,2,3}`中`arr[0]`记录为`arr;0`。
 
 ```java
-public class ValueTable {
+public class ValueScope {
     private HashMap<String, Value> valueTable = new HashMap<>();
     private HashMap<String, Integer> constTable = new HashMap<>();
-    private ValueTable parentTable;
+    private ValueTable parent;
     private List<ValueTable> childrenTables = new ArrayList<>();
 
     public ValueTable() {
@@ -1154,7 +1143,7 @@ public class ValueTable {
 
 ```
 
-上面这些都准备好后，就可以遍历语法树了。在遍历过程中，我们会频繁地创建Value，我的一个好友教我使用工厂模式，可以屏蔽一些操作细节，复用代码。所有的Value都在工厂中创建，以`buildStore`为例子：
+上面这些都准备好后，就可以遍历语法树了。在遍历过程中，我们会频繁地创建Value，这里可以使用工厂模式，可以屏蔽一些操作细节，复用代码。所有的Value都在工厂中创建，以`buildStore`为例子：
 
 ```java
 public StoreInst buildStore(BasicBlock basicBlock, Value pointer, Value value) {
@@ -1264,7 +1253,7 @@ llvm转mips其实不是很麻烦，只需要将每种llvm语句对应到若干�
 
 在生成中间代码时，类型转化是一个比较折磨人的地方，但在生成mips时可以不需要区分byte和word，直接无脑当成word就完事了，就不需要考虑位对齐、用`lb`还是`lw`这些问题。
 
-有些数据要存到栈中，所以还需要为栈建一个数据结构。我这里是搞了一个`StackSlot`，表示栈中的一个4字节单元：
+还需要建立符号表。我这里是搞了一个`StackSlot`，表示栈中的一个4字节单元：
 
 ```java
 public class StackSlot {
@@ -1289,7 +1278,7 @@ public class StackSlot {
 * `pos`：表示其在栈中的位置
 * `value`：这个单元对应的llvm中的虚拟寄存器
 
-然后栈是用的`private HashMap<String, StackSlot> stack = new HashMap<>();`，我给每一个value都规定了一个唯一的id，用这个id生成的键不会重复。因此感觉用`HashMap`比`ArrayList`好点，查找更方便。
+然后符号表是用的`private HashMap<String, StackSlot> stack = new HashMap<>();`，我给每一个value都规定了一个唯一的id，用这个id生成的键不会重复。因此感觉用`HashMap`比`ArrayList`好点，查找更方便。
 
 根据id生成键的规则如下：
 
@@ -1374,3 +1363,91 @@ public String generateMIPS(IRModule irModule) {
 然后为每一种llvm语句编写对应的翻译代码即可。数组相关的稍微麻烦一点点。
 
 ## 8. 代码优化设计
+
+我只进行了两处简单的优化
+
+### 8.1对于UnaryExp的优化
+
+对于形如`+-+--a`这样的式子，优化前我是每次遇到一个减号，用0减去原来的数；遇到加号则直接返回原来的数。
+
+优化后，我向下遍历`UnaryExp`，统计减号的个数，若减号个数为奇数，那么就使用0减去最后一次遇到的那个`UnaryExp`；若为偶数，直接返回最后遇到的`UnaryExp`。
+
+代码如下：
+
+```java
+int cnt = 0;
+TokenType op = null;
+UnaryExpNode tmp = unaryExpNode;
+while (tmp.getUnaryOpNode() != null) {
+    op = tmp.getUnaryOpType();
+    if (op == TokenType.MINU) cnt++;
+    else if (op == TokenType.NOT) break;
+    tmp = tmp.getUnaryExpNode();
+}
+if (cnt % 2 == 0) {
+    if (op == TokenType.NOT) {
+        ReturnValue returnValue = UnaryExp(tmp.getUnaryExpNode(), isConst);
+        returnValue.value = buildFactory.buildNot(curBlock, returnValue.value);
+        return returnValue;
+    }
+    return UnaryExp(tmp, isConst);
+} else {
+    ReturnValue returnValue = null;
+    if (op == TokenType.NOT) {
+        returnValue = UnaryExp(tmp.getUnaryExpNode(), isConst);
+        returnValue.value = buildFactory.buildNot(curBlock, returnValue.value);
+    } else {
+        returnValue = UnaryExp(tmp, isConst);
+    }
+    if (isConst) {
+        returnValue.constValue = -returnValue.constValue;
+    } else {
+        returnValue.value = buildFactory.buildBinary(curBlock, Operator.Sub, ConstInt.ZERO, returnValue.value);
+    }
+    return returnValue;
+}
+```
+
+### 8.2对于乘法的优化
+
+当乘数是2的n次幂时，可以使用左移运算，比使用直接相乘的指令要快一些。
+
+代码如下：
+
+```java
+private boolean isPowerOfTwo(int n) {
+    // 判断条件：n > 0 且 n 与 n-1 按位与运算的结果为 0
+    return n > 0 && (n & (n - 1)) == 0;
+}
+
+private int logBase2Bitwise(int n) {
+    if (n <= 0 || !isPowerOfTwo(n)) {
+        return -1;  // 非 2 的幂返回 -1
+    }
+    int count = 0;
+    while (n > 1) {
+        n >>= 1;  // 每次右移一位
+        count++;
+    }
+    return count;  // 返回 2 的幂次
+}
+
+private void translateBinaryInst(BinaryInst inst) {
+    ...
+    if (inst.isMul()) {
+        Value left = inst.getLeft();
+        Value right = inst.getRight();
+        if (isNumber(left.getNameWithID()) && isPowerOfTwo(Integer.parseInt(left.getNameWithID()))) {
+            load("$t0", right.getNameWithID());
+            sb.append("\tsll, $t0, $t0").append(", ").append(logBase2Bitwise(Integer.parseInt(left.getNameWithID()))).append("\n");
+        } else if (isNumber(right.getNameWithID()) && isPowerOfTwo(Integer.parseInt(right.getNameWithID()))) {
+            ...
+        }else{
+            ...
+        }
+        store("$t0", inst.getNameWithID());
+        return;
+    }
+    ...
+}
+```
